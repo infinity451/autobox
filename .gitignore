@@ -1,0 +1,10 @@
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 运行时数据（数据库自动生成，不提交）
+data/autobox.db
+
+# 虚拟环境
+.venv/
+venv/

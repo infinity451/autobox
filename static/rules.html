@@ -1,0 +1,99 @@
+<!-- ============================================================
+  规则管家：创建和管理「如果…就…」自动化规则
+  页面分三块：
+  1. 规则列表：显示已有规则，可启用/暂停、编辑、删除
+  2. 新建/编辑表单：拼一条规则的“触发器 + 条件 + 动作”
+  3. 运行日志：看每条规则的执行记录
+  ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>规则管家 - AutoBox</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- 顶部导航 -->
+  <div class="topbar">
+    <span class="topbar-title">📁 规则管家</span>
+    <a href="/">← 返回首页</a>
+  </div>
+
+  <div class="container">
+
+    <!-- ============ 第一块：规则列表 ============ -->
+    <div class="card">
+      <h3 class="card-title">我的规则</h3>
+      <!-- 规则列表容器：内容由 rules.js 动态生成 -->
+      <div id="ruleList">
+        <div class="empty-tip">加载中…</div>
+      </div>
+    </div>
+
+    <!-- ============ 第二块：新建/编辑表单 ============ -->
+    <div class="card">
+      <h3 class="card-title" id="formTitle">新建规则</h3>
+
+      <!-- 规则名字 -->
+      <label>规则名字</label>
+      <input id="ruleName" placeholder="例：视频自动归档">
+
+      <!-- 触发器：类型 + 对应参数 -->
+      <label>触发器（什么时候开始）</label>
+      <select id="triggerType">
+        <option value="file_added">有新文件出现时</option>
+        <option value="file_modified">文件被修改时</option>
+        <option value="schedule">定时触发（cron）</option>
+      </select>
+
+      <!-- 文件触发器参数：监控目录（triggerType 是文件类时显示） -->
+      <div id="watchDirWrap">
+        <label>监控目录</label>
+        <input id="watchDir" placeholder="例：D:/下载">
+      </div>
+
+      <!-- 定时触发器参数：cron 表达式（triggerType 是定时时显示） -->
+      <div id="cronWrap" style="display:none;">
+        <label>cron 表达式（分 时 日 月 周）</label>
+        <input id="cron" placeholder="例：0 17 * * 5 表示每周五 17:00">
+        <div class="muted" style="font-size:12px;">
+          常用：每天 9 点 = 0 9 * * * ｜ 每周一 8 点 = 0 8 * * 1 ｜ 每小时 = 0 * * * *
+        </div>
+      </div>
+
+      <!-- 条件列表：由 JS 动态添加/删除 -->
+      <label>条件（满足才执行，可留空 = 全部执行）</label>
+      <div id="condList"></div>
+      <button class="btn btn-ghost" onclick="addConditionRow()">+ 添加条件</button>
+
+      <!-- 动作列表：由 JS 动态添加/删除 -->
+      <label>动作（做什么，按顺序执行）</label>
+      <div id="actionList"></div>
+      <button class="btn btn-ghost" onclick="addActionRow()">+ 添加动作</button>
+
+      <!-- 保存/取消按钮 -->
+      <div class="mt-16" style="display:flex; gap:12px;">
+        <button class="btn btn-primary" onclick="saveRule()" id="saveBtn">保存规则</button>
+        <button class="btn btn-ghost" onclick="resetForm()" id="cancelBtn" style="display:none;">取消编辑</button>
+      </div>
+      <!-- 错误提示区 -->
+      <div id="formError" class="mt-8" style="color:#e5484d; font-size:13px;"></div>
+    </div>
+
+    <!-- ============ 第三块：运行日志 ============ -->
+    <div class="card">
+      <h3 class="card-title">运行日志</h3>
+      <div id="logList">
+        <div class="empty-tip">加载中…</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 先引入 api.js（提供请求函数），再引入 rules.js（页面逻辑） -->
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/rules.js"></script>
+</body>
+</html>

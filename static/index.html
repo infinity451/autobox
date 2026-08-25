@@ -1,0 +1,83 @@
+<!-- ============================================================
+  首页：功能中心
+  这是打开 AutoBox 看到的第一个页面，展示所有功能模块。
+  HTML 语法：标签成对出现 <标签>内容</标签>，标签决定内容是什么。
+  ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- meta 标签：charset="utf-8" 告诉浏览器用中文编码，防止乱码 -->
+  <meta charset="utf-8">
+  <!-- 让页面在手机上也能正常缩放（我们用不到手机，但加上无害） -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 浏览器标签页上显示的名字 -->
+  <title>AutoBox 自动化工具箱</title>
+  <!-- 引入全局样式表（css/style.css） -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- 顶部导航栏 -->
+  <div class="topbar">
+    <span class="topbar-title">AutoBox 自动化工具箱</span>
+    <!-- 显示引擎状态的小字（由 JS 填充） -->
+    <span id="statusText" style="font-size:13px; opacity:0.85;">状态检测中…</span>
+  </div>
+
+  <div class="container">
+
+    <!-- 模块网格：flex 布局，自动换行排列模块卡片 -->
+    <div style="display:flex; flex-wrap:wrap; gap:16px;">
+
+      <!-- 模块卡片 1：规则管家（已完成，可点击进入） -->
+      <div class="card" style="width:280px; cursor:pointer;" onclick="location.href='/rules.html'">
+        <div style="font-size:28px;">📁</div>               <!-- 模块图标（emoji） -->
+        <h3 style="margin:8px 0 4px;">规则管家</h3>          <!-- 模块名字 -->
+        <div class="muted" style="font-size:13px;">如果…就…自动处理文件</div>  <!-- 模块说明 -->
+        <div class="btn btn-primary mt-16" style="text-align:center;">进入</div>  <!-- 进入按钮 -->
+      </div>
+
+      <!-- 模块卡片 2：网页采集器（开发中） -->
+      <div class="card" style="width:280px; opacity:0.55;">
+        <div style="font-size:28px;">🕸️</div>
+        <h3 style="margin:8px 0 4px;">网页采集器</h3>
+        <div class="muted" style="font-size:13px;">配置式爬虫 → Excel（开发中）</div>
+        <div class="btn btn-ghost mt-16" style="text-align:center;" disabled>开发中</div>
+      </div>
+
+      <!-- 模块卡片 3：批量文件魔法（开发中） -->
+      <div class="card" style="width:280px; opacity:0.55;">
+        <div style="font-size:28px;">🪄</div>
+        <h3 style="margin:8px 0 4px;">批量文件魔法</h3>
+        <div class="muted" style="font-size:13px;">批量重命名/转换/压缩（开发中）</div>
+        <div class="btn btn-ghost mt-16" style="text-align:center;" disabled>开发中</div>
+      </div>
+
+      <!-- 模块卡片 4：宏录制器（开发中） -->
+      <div class="card" style="width:280px; opacity:0.55;">
+        <div style="font-size:28px;">🎬</div>
+        <h3 style="margin:8px 0 4px;">宏录制器</h3>
+        <div class="muted" style="font-size:13px;">录操作 → 一键回放（开发中）</div>
+        <div class="btn btn-ghost mt-16" style="text-align:center;" disabled>开发中</div>
+      </div>
+
+      <!-- 模块卡片 5：定时提醒中心（开发中） -->
+      <div class="card" style="width:280px; opacity:0.55;">
+        <div style="font-size:28px;">⏰</div>
+        <h3 style="margin:8px 0 4px;">定时提醒中心</h3>
+        <div class="muted" style="font-size:13px;">提醒/定时关机（开发中）</div>
+        <div class="btn btn-ghost mt-16" style="text-align:center;" disabled>开发中</div>
+      </div>
+
+    </div>
+
+    <!-- 底部提示 -->
+    <p class="muted mt-16" style="text-align:center; font-size:13px;">
+      数据全部保存在本机（data/autobox.db），不上传任何云端。
+    </p>
+  </div>
+
+  <!-- 引入 index.js：负责填充引擎状态文字 -->
+  <script src="/static/js/index.js"></script>
+</body>
+</html>

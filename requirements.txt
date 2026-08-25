@@ -1,0 +1,18 @@
+# ===== AutoBox 自动化工具箱 依赖 =====
+# 安装：pip install -r requirements.txt
+
+# --- Web 服务 ---
+fastapi>=0.111.0
+uvicorn>=0.30.0
+
+# --- 自动化引擎 ---
+watchdog>=4.0.0            # 文件系统监控（规则管家）
+apscheduler>=3.10.0        # 定时调度（定时触发/提醒/关机）
+
+# --- 网页采集器（第 2 阶段） ---
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+
+# --- 桌面通知（第 2 阶段启用弹窗） ---
+# plyer>=2.1.0

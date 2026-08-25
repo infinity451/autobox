@@ -1,0 +1,179 @@
+/* ============================================================
+   AutoBox 全局样式
+   这份文件控制整个网页“长什么样”：颜色、大小、间距、圆角等。
+   CSS 的语法是：选择器 { 属性: 值; }
+   选择器决定“给谁设样式”，花括号里是“设什么样式”。
+   ============================================================ */
+
+/* ---------- 全局基础设置 ---------- */
+/* 用 * 选择器给所有元素设置“盒子模型”，让宽高计算更直观 */
+* {
+  box-sizing: border-box;  /* 宽度包含内边距和边框，布局不容易乱 */
+}
+
+/* body 是整个页面的身体 */
+body {
+  margin: 0;                    /* 去掉浏览器默认的外边距 */
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;  /* 中文字体 */
+  background: #f5f6fa;          /* 页面背景：淡灰色 */
+  color: #2b2f36;               /* 文字主色：深灰 */
+}
+
+/* ---------- 顶部导航栏 ---------- */
+.topbar {
+  background: linear-gradient(135deg, #4f6ef7, #7c5cf0);  /* 渐变紫色背景 */
+  color: #fff;                  /* 文字白色 */
+  padding: 16px 24px;           /* 上下 16px、左右 24px 的内边距 */
+  display: flex;                /* 弹性布局：子元素横排 */
+  justify-content: space-between;  /* 子元素两端对齐 */
+  align-items: center;          /* 垂直居中 */
+}
+
+.topbar-title {
+  font-size: 20px;              /* 标题字号 */
+  font-weight: 700;             /* 加粗 */
+}
+
+.topbar a {
+  color: #fff;                  /* 链接白色 */
+  text-decoration: none;        /* 去掉下划线 */
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* ---------- 内容容器 ---------- */
+.container {
+  max-width: 960px;             /* 内容最大宽度，太宽时居中 */
+  margin: 0 auto;               /* 水平居中 */
+  padding: 24px 16px;           /* 内边距 */
+}
+
+/* ---------- 卡片（页面上的白色方块） ---------- */
+.card {
+  background: #fff;             /* 白色背景 */
+  border-radius: 14px;          /* 圆角 */
+  padding: 20px;                /* 内边距 */
+  margin-bottom: 16px;          /* 与下一个元素的距离 */
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.06);  /* 轻微阴影，有立体感 */
+}
+
+.card-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 12px;             /* 上 0、左右 0、下 12px */
+}
+
+/* ---------- 按钮 ---------- */
+.btn {
+  border: none;                 /* 去掉边框 */
+  border-radius: 8px;           /* 圆角 */
+  padding: 10px 18px;           /* 内边距（上下 10px 左右 18px） */
+  font-size: 14px;
+  cursor: pointer;              /* 鼠标变成小手 */
+  transition: opacity 0.15s;    /* 悬停时有过渡动画 */
+}
+
+.btn-primary {
+  background: #4f6ef7;          /* 主按钮蓝色 */
+  color: #fff;
+}
+
+.btn-ghost {
+  background: #eef1fe;          /* 次按钮浅蓝 */
+  color: #4f6ef7;
+}
+
+.btn-danger {
+  background: #fdecec;          /* 危险按钮浅红 */
+  color: #e5484d;
+}
+
+.btn:hover {
+  opacity: 0.85;                /* 悬停时稍微变淡 */
+}
+
+.btn[disabled] {
+  opacity: 0.5;                 /* 禁用按钮变淡 */
+  cursor: not-allowed;          /* 鼠标变成禁止符号 */
+}
+
+/* ---------- 表单元素 ---------- */
+input, select, textarea {
+  width: 100%;                  /* 占满宽度 */
+  padding: 10px 12px;           /* 内边距 */
+  border: 1px solid #d9dce3;    /* 浅灰边框 */
+  border-radius: 8px;           /* 圆角 */
+  font-size: 14px;
+  font-family: inherit;         /* 继承页面字体 */
+}
+
+label {
+  display: block;               /* 标签独占一行 */
+  font-size: 13px;
+  color: #6b7280;               /* 灰色文字 */
+  margin: 12px 0 4px;           /* 上边距 12px */
+}
+
+/* ---------- 规则列表 ---------- */
+.rule-item {
+  display: flex;                /* 横排 */
+  justify-content: space-between;  /* 两端对齐 */
+  align-items: center;          /* 垂直居中 */
+  padding: 14px 0;              /* 上下内边距 */
+  border-bottom: 1px solid #f0f1f5;  /* 底部细线分隔 */
+}
+
+.rule-item:last-child {
+  border-bottom: none;          /* 最后一项不要分隔线 */
+}
+
+.rule-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.rule-desc {
+  font-size: 12px;
+  color: #8a9099;
+  margin-top: 4px;
+}
+
+/* 开关样式：启用状态的规则名字带绿色小圆点 */
+.dot-on {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;           /* 圆形 */
+  background: #16a34a;          /* 绿色 */
+  margin-right: 6px;
+}
+
+/* ---------- 日志 ---------- */
+.log-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f6fa;
+  font-size: 13px;
+}
+
+.log-time {
+  color: #8a9099;
+  margin-right: 8px;
+}
+
+.log-success { color: #16a34a; }   /* 成功日志：绿色 */
+.log-error { color: #e5484d; }     /* 错误日志：红色 */
+.log-info { color: #4f6ef7; }      /* 信息日志：蓝色 */
+
+/* ---------- 其他 ---------- */
+.muted {
+  color: #8a9099;               /* 灰色提示文字 */
+}
+
+.mt-16 { margin-top: 16px; }    /* 上边距工具类 */
+.mt-8 { margin-top: 8px; }
+
+.empty-tip {
+  text-align: center;           /* 居中 */
+  color: #8a9099;
+  padding: 32px 0;              /* 上下内边距，撑出高度 */
+}
