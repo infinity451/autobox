@@ -1,0 +1,68 @@
+<!-- ============================================================
+  宏录制器：录制鼠标键盘操作 → 保存 → 一键回放
+  页面流程：
+  1. 点「开始录制」→ 3 秒倒计时 → 开始记录你的操作
+  2. 做一遍想自动化的操作 → 点「停止录制」
+  3. 填名字保存 → 点「播放」回放
+  安全：回放会真的动你的鼠标键盘！播放前请确认；按 F8 紧急停止
+  ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>宏录制器 - AutoBox</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- 顶部导航 -->
+  <div class="topbar">
+    <span class="topbar-title">🎬 宏录制器</span>
+    <a href="/">← 返回首页</a>
+  </div>
+
+  <div class="container">
+
+    <!-- ============ 录制区 ============ -->
+    <div class="card">
+      <h3 class="card-title">录制新宏</h3>
+      <div class="hint">
+        点「开始录制」→ 等 3 秒倒计时 → 做一遍你想自动化的操作（鼠标点击/打字/滚动）
+        → 点「停止录制」→ 填名字保存。以后一键回放。
+      </div>
+      <div class="mt-16" style="display:flex; gap:12px; align-items:center;">
+        <button class="btn btn-primary" onclick="startRecord()" id="recBtn">▶ 开始录制</button>
+        <button class="btn btn-danger" onclick="stopRecord()" id="stopBtn" style="display:none;">⏹ 停止录制</button>
+        <span id="recStatus" class="muted"></span>
+      </div>
+      <!-- 倒计时提示 -->
+      <div id="countdown" style="font-size:32px; font-weight:700; color:#4f6ef7; margin-top:12px;"></div>
+    </div>
+
+    <!-- ============ 保存区 ============ -->
+    <div class="card" id="saveCard" style="display:none;">
+      <h3 class="card-title">保存宏</h3>
+      <label>宏名字</label>
+      <input id="macroName" placeholder="例：打开记事本输入固定文字">
+      <div class="muted">本次录制了 <span id="eventCount">0</span> 个操作</div>
+      <div class="mt-16">
+        <button class="btn btn-primary" onclick="saveMacro()">保存宏</button>
+      </div>
+      <div id="saveError" class="mt-8" style="color:#e5484d; font-size:13px;"></div>
+    </div>
+
+    <!-- ============ 宏列表 ============ -->
+    <div class="card">
+      <h3 class="card-title">我的宏</h3>
+      <div id="macroList">
+        <div class="empty-tip">加载中…</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/macro.js"></script>
+</body>
+</html>

@@ -127,6 +127,15 @@ def init_db() -> None:
                 created_at TEXT NOT NULL,       -- 创建时间
                 updated_at TEXT NOT NULL        -- 更新时间
             );
+
+            -- 宏表（宏录制器模块）：保存录制的鼠标键盘操作序列
+            CREATE TABLE IF NOT EXISTS macros (
+                id         TEXT PRIMARY KEY,    -- 宏唯一编号
+                name       TEXT NOT NULL,       -- 宏名字（如“打开记事本打字”）
+                events     TEXT NOT NULL,       -- 事件序列（JSON 文本：鼠标移动/点击/按键…）
+                created_at TEXT NOT NULL,       -- 创建时间
+                updated_at TEXT NOT NULL        -- 更新时间
+            );
             """
         )
 

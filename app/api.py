@@ -418,3 +418,96 @@ def api_timer_toggle(task_id: str) -> dict:
 def api_timer_run(task_id: str) -> dict:
     """接口：立即执行一次定时任务（测试弹窗用）。"""
     return timer_run_task(task_id)
+
+
+# ============================================================
+# 宏录制器接口（第 4 阶段）
+# ============================================================
+
+# 导入宏模块
+from .macro.store import delete_macro, get_macro, list_macros, save_macro
+from .macro.recorder import is_recording, start_recording, stop_recording
+from .macro.player import is_playing, play_macro, stop_playing
+
+
+class MacroSaveIn(BaseModel):
+    """保存宏（前端传来的数据）。"""
+    name: str        # 宏名字
+    events: list     # 事件序列（录制得到的）
+
+
+class MacroPlayIn(BaseModel):
+    """回放请求（前端传来的数据）。"""
+    speed: float = 1.0   # 速度倍率（1=原速）
+
+
+@router.get("/macro/list")
+def api_macro_list() -> dict:
+    """接口：获取所有宏。"""
+    return {"macros": list_macros()}
+
+
+@router.post("/macro/save")
+def api_macro_save(data: MacroSaveIn) -> dict:
+    """接口：保存宏。"""
+    try:
+        macro = save_macro(data.name, data.events)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"macro": macro}
+
+
+@router.delete("/macro/{macro_id}")
+def api_macro_delete(macro_id: str) -> dict:
+    """接口：删除宏。"""
+    if not delete_macro(macro_id):
+        raise HTTPException(status_code=404, detail="宏不存在")
+    return {"ok": True}
+
+
+@router.post("/macro/{macro_id}/play")
+def api_macro_play(macro_id: str, data: MacroPlayIn) -> dict:
+    """接口：回放宏（真的操作鼠标键盘）。
+
+    注意：这是有实际副作用的操作（点鼠标/打字），前端应让用户确认。
+    """
+    # 查宏
+    macro = get_macro(macro_id)
+    if macro is None:
+        raise HTTPException(status_code=404, detail="宏不存在")
+    # 正在回放中就不能再回放（防止重复触发）
+    if is_playing():
+        return {"ok": False, "error": "正在回放中，请先停止"}
+    # 执行回放
+    return play_macro(macro["events"], speed=data.speed)
+
+
+@router.post("/macro/play/stop")
+def api_macro_play_stop() -> dict:
+    """接口：请求停止回放（紧急停止）。"""
+    stop_playing()
+    return {"ok": True}
+
+
+@router.post("/macro/record/start")
+def api_macro_record_start() -> dict:
+    """接口：开始录制。
+
+    前端调用后，用户接下来操作的鼠标键盘都会被记录。
+    注意：录制期间服务端会持续监听，前端需要再调 stop 结束。
+    """
+    start_recording()
+    return {"ok": True, "recording": True}
+
+
+@router.post("/macro/record/stop")
+def api_macro_record_stop() -> dict:
+    """接口：停止录制，返回录到的事件。"""
+    events = stop_recording()
+    return {"ok": True, "events": events, "count": len(events)}
+
+
+@router.get("/macro/status")
+def api_macro_status() -> dict:
+    """接口：查询录制/回放状态（前端轮询用）。"""
+    return {"recording": is_recording(), "playing": is_playing()}

@@ -142,3 +142,35 @@ function toggleTimerTask(id) {
 function runTimerTask(id) {
   return request(`/api/timer/tasks/${id}/run`, "POST");
 }
+
+// ============ 宏录制器接口 ============
+
+// 获取所有宏（GET /api/macro/list）
+function getMacroList() {
+  return request("/api/macro/list");
+}
+
+// 保存宏（POST /api/macro/save）
+function saveMacroApi(body) {
+  return request("/api/macro/save", "POST", body);
+}
+
+// 删除宏（DELETE /api/macro/{id}）
+function deleteMacroApi(id) {
+  return request(`/api/macro/${id}`, "DELETE");
+}
+
+// 回放宏（POST /api/macro/{id}/play）
+function playMacro(id, speed) {
+  return request(`/api/macro/${id}/play`, "POST", { speed });
+}
+
+// 开始录制（POST /api/macro/record/start）
+function startMacroRecord() {
+  return request("/api/macro/record/start", "POST");
+}
+
+// 停止录制（POST /api/macro/record/stop）
+function stopMacroRecord() {
+  return request("/api/macro/record/stop", "POST");
+}

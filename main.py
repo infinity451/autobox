@@ -72,7 +72,13 @@ def main() -> None:
     from app.timer.runner import sync_schedules as sync_timer
 
     sync_timer()
-    # 第五步：启动网页服务器
+    # 第五步：启动宏录制器的监听线程（键盘鼠标监听 + 紧急停止键监听）
+    from app.macro.recorder import start_listeners
+    from app.macro.player import start_emergency_listener
+
+    start_listeners()
+    start_emergency_listener()
+    # 第六步：启动网页服务器
     # host="127.0.0.1" 只在本机开放（局域网其他人暂时访问不了，安全）
     # port=8000 网页端口；访问 http://127.0.0.1:8000
     uvicorn.run(app, host="127.0.0.1", port=8000)
