@@ -1,0 +1,57 @@
+<!-- ============================================================
+  本地测试页：模拟一个新闻列表网站，给「网页采集器」练手用。
+  访问地址：http://127.0.0.1:8000/static/test_page.html
+  采集器配置参考：
+    URL: http://127.0.0.1:8000/static/test_page.html
+    列表容器选择器: div.news-item
+    字段1: 标题  →  h2   (text)
+    字段2: 链接  →  a    (attr.href)
+    字段3: 日期  →  .date (text)
+  ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>模拟新闻站 - 仅供测试</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 20px auto; }
+    .news-item { border: 1px solid #ddd; padding: 12px; margin-bottom: 10px; border-radius: 8px; }
+    .date { color: #888; font-size: 13px; }
+    h2 { margin: 4px 0; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <h1>模拟新闻列表</h1>
+
+  <!-- 每条新闻是一个 div.news-item，里面包含标题(h2)、链接(a)、日期(.date) -->
+  <div class="news-item">
+    <h2>人工智能学会整理文件了</h2>
+    <a href="/news/101">查看详情</a>
+    <div class="date">2026-08-20</div>
+  </div>
+
+  <div class="news-item">
+    <h2>本地运行软件越来越流行</h2>
+    <a href="/news/102">查看详情</a>
+    <div class="date">2026-08-21</div>
+  </div>
+
+  <div class="news-item">
+    <h2>Python 再次成为最受欢迎语言</h2>
+    <a href="/news/103">查看详情</a>
+    <div class="date">2026-08-22</div>
+  </div>
+
+  <div class="news-item">
+    <h2>自动化工具帮助打工人节省 3 小时/周</h2>
+    <a href="/news/104">查看详情</a>
+    <div class="date">2026-08-23</div>
+  </div>
+
+  <div class="news-item">
+    <h2>初学者也能做出自己的软件</h2>
+    <a href="/news/105">查看详情</a>
+    <div class="date">2026-08-24</div>
+  </div>
+</body>
+</html>

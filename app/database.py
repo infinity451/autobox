@@ -88,6 +88,32 @@ def init_db() -> None:
                 key   TEXT PRIMARY KEY,         -- 配置项名字
                 value TEXT                      -- 配置项内容
             );
+
+            -- 采集任务表（网页采集器模块）：保存每条采集配置
+            CREATE TABLE IF NOT EXISTS crawler_tasks (
+                id             TEXT PRIMARY KEY,    -- 任务唯一编号
+                name           TEXT NOT NULL,       -- 任务名字（如“新闻标题采集”）
+                url            TEXT NOT NULL,       -- 要采集的网页地址
+                item_selector  TEXT NOT NULL,       -- 列表容器选择器（每条记录的外壳）
+                fields         TEXT NOT NULL DEFAULT '[]',  -- 字段配置（JSON 文本）
+                cron           TEXT NOT NULL DEFAULT '',     -- 定时表达式（空=不自动采集）
+                max_items      INTEGER NOT NULL DEFAULT 50,  -- 最多采集多少条
+                enabled        INTEGER NOT NULL DEFAULT 1,   -- 是否启用
+                created_at     TEXT NOT NULL,       -- 创建时间
+                updated_at     TEXT NOT NULL        -- 更新时间
+            );
+
+            -- 采集运行记录表：每次执行采集的结果
+            CREATE TABLE IF NOT EXISTS crawl_runs (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,  -- 自增编号
+                task_id    TEXT,                -- 哪个任务跑的
+                task_name  TEXT,                -- 任务名字（日志显示用）
+                status     TEXT NOT NULL,       -- 结果：success / error
+                item_count INTEGER NOT NULL DEFAULT 0,  -- 采集到多少条
+                csv_file   TEXT,                -- 导出的 CSV 文件名（出错时为空）
+                message    TEXT,                -- 说明（出错时是错误信息）
+                created_at TEXT NOT NULL        -- 运行时间
+            );
             """
         )
 

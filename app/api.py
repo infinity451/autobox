@@ -178,3 +178,119 @@ def api_status() -> dict:
         "running": engine._started,           # 引擎是否在运行
         "version": "0.1.0",                   # 项目版本
     }
+
+
+# ============================================================
+# 网页采集器接口（第 2 阶段）
+# ============================================================
+
+# 导入采集器模块（任务管理、执行器）
+from .crawler.tasks import (
+    create_task as crawler_create_task,
+    delete_task as crawler_delete_task,
+    list_tasks as crawler_list_tasks,
+    toggle_task as crawler_toggle_task,
+    update_task as crawler_update_task,
+)
+from .crawler.runner import list_runs, run_task, sync_schedules
+
+
+class CrawlFieldIn(BaseModel):
+    """采集字段配置（前端传来的数据）。"""
+    name: str                    # 字段名（CSV 的列名）
+    selector: str                # CSS 选择器（怎么定位这个字段）
+    attr: str = "text"           # 取值方式：text / html / attr.xxx
+
+
+class CrawlTaskIn(BaseModel):
+    """采集任务（前端传来的数据）。"""
+    name: str                    # 任务名字
+    url: str                     # 网页地址
+    item_selector: str           # 列表容器选择器
+    fields: list[CrawlFieldIn]   # 字段列表
+    cron: str = ""               # 定时表达式（空 = 不自动）
+    max_items: int = 50          # 最多条数
+    enabled: bool = True         # 是否启用
+
+
+@router.get("/crawl/tasks")
+def api_crawl_list() -> dict:
+    """接口：获取所有采集任务。"""
+    return {"tasks": crawler_list_tasks()}
+
+
+@router.post("/crawl/tasks")
+def api_crawl_create(data: CrawlTaskIn) -> dict:
+    """接口：创建采集任务。"""
+    try:
+        task = crawler_create_task(
+            name=data.name,
+            url=data.url,
+            item_selector=data.item_selector,
+            fields=[f.model_dump() for f in data.fields],
+            cron=data.cron,
+            max_items=data.max_items,
+            enabled=data.enabled,
+        )
+    except ValueError as e:
+        # 校验失败返回 400
+        raise HTTPException(status_code=400, detail=str(e))
+    # 同步定时任务（新任务可能带 cron）
+    sync_schedules()
+    return {"task": task}
+
+
+@router.put("/crawl/tasks/{task_id}")
+def api_crawl_update(task_id: str, data: CrawlTaskIn) -> dict:
+    """接口：更新采集任务。"""
+    try:
+        task = crawler_update_task(
+            task_id,
+            name=data.name,
+            url=data.url,
+            item_selector=data.item_selector,
+            fields=[f.model_dump() for f in data.fields],
+            cron=data.cron,
+            max_items=data.max_items,
+            enabled=data.enabled,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if task is None:
+        raise HTTPException(status_code=404, detail="任务不存在")
+    sync_schedules()
+    return {"task": task}
+
+
+@router.delete("/crawl/tasks/{task_id}")
+def api_crawl_delete(task_id: str) -> dict:
+    """接口：删除采集任务。"""
+    if not crawler_delete_task(task_id):
+        raise HTTPException(status_code=404, detail="任务不存在")
+    sync_schedules()
+    return {"ok": True}
+
+
+@router.post("/crawl/tasks/{task_id}/toggle")
+def api_crawl_toggle(task_id: str) -> dict:
+    """接口：切换任务启用/暂停。"""
+    task = crawler_toggle_task(task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="任务不存在")
+    sync_schedules()
+    return {"task": task}
+
+
+@router.post("/crawl/tasks/{task_id}/run")
+def api_crawl_run(task_id: str) -> dict:
+    """接口：立即执行一次采集。
+
+    返回结果（ok/count/csv/preview），前端显示“采到几条 + 表格预览 + 下载链接”。
+    """
+    return run_task(task_id)
+
+
+@router.get("/crawl/runs")
+def api_crawl_runs(task_id: str | None = None) -> dict:
+    """接口：查询采集运行历史。"""
+    return {"runs": list_runs(task_id)}

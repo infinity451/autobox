@@ -61,3 +61,40 @@ function getLogs() {
 function getStatus() {
   return request("/api/status");
 }
+
+// ============ 网页采集器接口 ============
+
+// 获取所有采集任务（GET /api/crawl/tasks）
+function getCrawlTasks() {
+  return request("/api/crawl/tasks");
+}
+
+// 创建采集任务（POST /api/crawl/tasks）
+function createCrawlTask(body) {
+  return request("/api/crawl/tasks", "POST", body);
+}
+
+// 更新采集任务（PUT /api/crawl/tasks/{id}）
+function updateCrawlTask(id, body) {
+  return request(`/api/crawl/tasks/${id}`, "PUT", body);
+}
+
+// 删除采集任务（DELETE /api/crawl/tasks/{id}）
+function deleteCrawlTask(id) {
+  return request(`/api/crawl/tasks/${id}`, "DELETE");
+}
+
+// 切换任务启用/暂停（POST /api/crawl/tasks/{id}/toggle）
+function toggleCrawlTask(id) {
+  return request(`/api/crawl/tasks/${id}/toggle`, "POST");
+}
+
+// 立即运行采集（POST /api/crawl/tasks/{id}/run）
+function runCrawlTask(id) {
+  return request(`/api/crawl/tasks/${id}/run`, "POST");
+}
+
+// 获取采集历史（GET /api/crawl/runs）
+function getCrawlRuns() {
+  return request("/api/crawl/runs");
+}

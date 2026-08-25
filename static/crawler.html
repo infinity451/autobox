@@ -1,0 +1,92 @@
+<!-- ============================================================
+  网页采集器：配置式爬虫页面
+  页面分四块：
+  1. 任务列表：已有任务，可运行/编辑/删除/暂停
+  2. 新建任务表单：URL + 列表容器选择器 + 字段列表 + 定时
+  3. 运行结果：本次采集的条数、表格预览、下载 CSV
+  4. 运行历史：每次采集的记录
+  ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>网页采集器 - AutoBox</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- 顶部导航 -->
+  <div class="topbar">
+    <span class="topbar-title">🕸️ 网页采集器</span>
+    <a href="/">← 返回首页</a>
+  </div>
+
+  <div class="container">
+
+    <!-- ============ 第一块：任务列表 ============ -->
+    <div class="card">
+      <h3 class="card-title">我的采集任务</h3>
+      <div id="taskList">
+        <div class="empty-tip">加载中…</div>
+      </div>
+    </div>
+
+    <!-- ============ 第二块：新建/编辑任务 ============ -->
+    <div class="card">
+      <h3 class="card-title" id="formTitle">新建采集任务</h3>
+
+      <!-- 任务名字 -->
+      <label>任务名字</label>
+      <input id="taskName" placeholder="例：新闻标题采集">
+
+      <!-- 网页地址 -->
+      <label>网页地址（URL）</label>
+      <input id="taskUrl" placeholder="例：http://127.0.0.1:8000/static/test_page.html">
+
+      <!-- 列表容器选择器 -->
+      <label>列表容器选择器（每条记录的外壳，CSS 选择器）</label>
+      <input id="itemSelector" placeholder="例：div.news-item">
+
+      <!-- 字段列表：由 JS 动态添加/删除 -->
+      <label>提取字段（每行一个：字段名 + 选择器 + 取值方式）</label>
+      <div id="fieldList"></div>
+      <button class="btn btn-ghost" onclick="addFieldRow()">+ 添加字段</button>
+
+      <!-- 可选：定时采集 -->
+      <label>定时自动采集（cron，可留空 = 不自动）</label>
+      <input id="taskCron" placeholder="例：0 8 * * * 表示每天 8 点自动采集">
+      <div class="muted" style="font-size:12px;">常用：每天 8 点 = 0 8 * * * ｜ 每小时 = 0 * * * *</div>
+
+      <!-- 最多条数 -->
+      <label>最多采集条数</label>
+      <input id="maxItems" type="number" value="50" min="1">
+
+      <!-- 保存按钮 -->
+      <div class="mt-16" style="display:flex; gap:12px;">
+        <button class="btn btn-primary" onclick="saveTask()">保存任务</button>
+        <button class="btn btn-ghost" onclick="resetForm()" id="cancelBtn" style="display:none;">取消编辑</button>
+      </div>
+      <div id="formError" class="mt-8" style="color:#e5484d; font-size:13px;"></div>
+    </div>
+
+    <!-- ============ 第三块：运行结果 ============ -->
+    <div class="card" id="resultCard" style="display:none;">
+      <h3 class="card-title" id="resultTitle">运行结果</h3>
+      <div id="resultBody"></div>
+    </div>
+
+    <!-- ============ 第四块：运行历史 ============ -->
+    <div class="card">
+      <h3 class="card-title">采集历史</h3>
+      <div id="runHistory">
+        <div class="empty-tip">加载中…</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/crawler.js"></script>
+</body>
+</html>

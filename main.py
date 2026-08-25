@@ -36,6 +36,14 @@ app.include_router(router)
 # 浏览器访问 /static/xxx 就能拿到这个文件夹里的 HTML/CSS/JS 文件
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# 把 data/exports 挂载为导出文件目录：
+# 采集器生成的 CSV 文件放这里，浏览器访问 /exports/xxx.csv 即可下载
+# 注意：目录不存在时 StaticFiles 会报错，所以先创建
+from pathlib import Path
+
+Path("data/exports").mkdir(parents=True, exist_ok=True)
+app.mount("/exports", StaticFiles(directory="data/exports"), name="exports")
+
 
 # 编写一个简单的首页入口：
 # 访问 http://127.0.0.1:8000/ 时，直接返回 static/index.html 文件内容
@@ -56,7 +64,11 @@ def main() -> None:
     init_db()
     # 第二步：启动自动化引擎（加载规则、开始监控文件、启动定时器）
     engine.start()
-    # 第三步：启动网页服务器
+    # 第三步：同步采集任务的定时计划（网页采集器模块，配置了 cron 的任务开始自动采集）
+    from app.crawler.runner import sync_schedules
+
+    sync_schedules()
+    # 第四步：启动网页服务器
     # host="127.0.0.1" 只在本机开放（局域网其他人暂时访问不了，安全）
     # port=8000 网页端口；访问 http://127.0.0.1:8000
     uvicorn.run(app, host="127.0.0.1", port=8000)
