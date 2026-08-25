@@ -13,6 +13,12 @@ window.addEventListener("DOMContentLoaded", () => {
   addFieldRow();    // 表单默认有一行字段
 });
 
+// 动态开关切换时：显示/隐藏"等待选择器"输入框
+function updateDynamicUI() {
+  const on = document.getElementById("dynamicCheck").checked;
+  document.getElementById("waitWrap").style.display = on ? "block" : "none";
+}
+
 // ---------- 任务列表 ----------
 
 // 从后端取所有采集任务并渲染
@@ -137,6 +143,10 @@ function editTask(id) {
     document.getElementById("itemSelector").value = task.item_selector;
     document.getElementById("taskCron").value = task.cron;
     document.getElementById("maxItems").value = task.max_items;
+    // 填动态页配置
+    document.getElementById("dynamicCheck").checked = task.dynamic || false;
+    document.getElementById("waitSelector").value = task.wait_selector || "";
+    updateDynamicUI();
     // 清空字段行，把任务里的字段填进去
     document.getElementById("fieldList").innerHTML = "";
     task.fields.forEach((f) => addFieldRow(f));
@@ -156,6 +166,10 @@ function resetForm() {
   document.getElementById("maxItems").value = 50;
   document.getElementById("fieldList").innerHTML = "";
   document.getElementById("formError").textContent = "";
+  // 重置动态页配置
+  document.getElementById("dynamicCheck").checked = false;
+  document.getElementById("waitSelector").value = "";
+  updateDynamicUI();
   addFieldRow();
 }
 
@@ -195,6 +209,8 @@ function saveTask() {
   const itemSelector = document.getElementById("itemSelector").value.trim();
   const cron = document.getElementById("taskCron").value.trim();
   const maxItems = parseInt(document.getElementById("maxItems").value) || 50;
+  const dynamic = document.getElementById("dynamicCheck").checked;
+  const waitSelector = document.getElementById("waitSelector").value.trim();
 
   // 收集字段：遍历每个字段行
   const fields = [];
@@ -209,7 +225,7 @@ function saveTask() {
   });
 
   // 组装提交数据
-  const body = { name, url, item_selector: itemSelector, fields, cron, max_items: maxItems, enabled: true };
+  const body = { name, url, item_selector: itemSelector, fields, cron, max_items: maxItems, enabled: true, dynamic, wait_selector: waitSelector };
 
   // 编辑模式调更新接口，否则调创建接口
   const promise = editingId ? updateCrawlTask(editingId, body) : createCrawlTask(body);

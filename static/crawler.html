@@ -48,6 +48,20 @@
       <label>列表容器选择器（每条记录的外壳，CSS 选择器）</label>
       <input id="itemSelector" placeholder="例：div.news-item">
 
+      <!-- 动态页面开关 -->
+      <label>动态页面（内容靠 JavaScript 加载）</label>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" id="dynamicCheck" style="width:auto;" onchange="updateDynamicUI()">
+        <span class="muted">JS 渲染的网页（如电商、评论区）需要勾选，用系统浏览器渲染后再抓</span>
+      </div>
+
+      <!-- 等待选择器（动态页用） -->
+      <div id="waitWrap" style="display:none;">
+        <label>等待选择器（等这个元素出现再抓，动态页强烈建议填）</label>
+        <input id="waitSelector" placeholder="例：div.news-item 或 .product">
+        <div class="muted" style="font-size:12px;">动态内容往往几秒后才出现，等目标元素出现再抓最稳</div>
+      </div>
+
       <!-- 字段列表：由 JS 动态添加/删除 -->
       <label>提取字段（每行一个：字段名 + 选择器 + 取值方式）</label>
       <div id="fieldList"></div>

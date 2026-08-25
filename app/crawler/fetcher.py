@@ -33,28 +33,78 @@ DEFAULT_HEADERS = {
 }
 
 
-def fetch_html(url: str, timeout: int = 15) -> str:
+def fetch_html(url: str, timeout: int = 15, dynamic: bool = False, wait_selector: str = "") -> str:
     """抓取网页源码。
 
     参数：
         url: 网页地址
         timeout: 超时秒数（网络不好时防止卡死）
+        dynamic: 是否为动态网页（内容靠 JavaScript 加载）
+        wait_selector: 等待选择器（动态页等到该元素出现再抓取；空则不等待特定元素）
     返回：
         网页源码字符串（HTML）
     异常：
         网络错误 / HTTP 错误码（404 等）会抛异常，由调用方处理
     """
+    # 动态网页：用浏览器渲染（Playwright + 系统 Edge），拿到 JS 执行后的完整 HTML
+    if dynamic:
+        return fetch_html_render(url, timeout, wait_selector)
+    # 静态网页：直接发请求拿 HTML（快、轻）
+    return fetch_html_requests(url, timeout)
+
+
+def fetch_html_requests(url: str, timeout: int = 15) -> str:
+    """静态网页抓取（原方案）：requests 直接拿 HTML 源码。"""
     # 发 GET 请求；headers 伪装浏览器，timeout 防卡死
     resp = requests.get(url, headers=DEFAULT_HEADERS, timeout=timeout)
     # raise_for_status()：状态码不是 200 就抛异常（比如 404 页面不存在）
     resp.raise_for_status()
     # 网页编码处理：优先用服务器声明的编码，识别不出就用“猜”
-    # 很多中文网站不声明编码，直接拿文本会乱码，所以先探测
     if not resp.encoding or resp.encoding.lower() == "iso-8859-1":
-        # apparent_encoding 是 requests 根据内容猜的编码（基于 chardet 库）
         resp.encoding = resp.apparent_encoding
     # 返回网页文本
     return resp.text
+
+
+def fetch_html_render(url: str, timeout: int = 15, wait_selector: str = "") -> str:
+    """动态网页抓取：用浏览器渲染，拿到 JS 执行后的完整 HTML。
+
+    原理：很多现代网页的内容是 JavaScript 动态生成的，直接 requests 拿到的是
+    空壳。这里用 Playwright 打开真实浏览器（用 Windows 自带的 Edge）渲染页面，
+    等动态内容加载完，再取渲染后的 HTML —— 剩下的解析逻辑和静态页完全一样。
+
+    参数：
+        url: 网页地址
+        timeout: 超时秒数
+        wait_selector: 等待选择器（推荐配置：等目标内容出现，比如 "div.news-item"）。
+             动态加载的内容往往几秒后才出现，等它出现再抓最稳。
+             留空则等"网络空闲"（networkidle，也常能覆盖动态加载）。
+    """
+    # 延迟导入：只有真正用到动态爬虫时才加载（避免普通请求也带上这个重依赖）
+    from playwright.sync_api import sync_playwright
+
+    # 用 with 管理 Playwright 生命周期（自动启动/关闭）
+    with sync_playwright() as p:
+        # channel="msedge"：用系统自带 Edge，不用额外下载 Chromium
+        # headless=True：无头模式（不弹出浏览器窗口，后台渲染）
+        browser = p.chromium.launch(channel="msedge", headless=True)
+        try:
+            # 打开一个空白页面
+            page = browser.new_page()
+            # 访问目标网页（timeout 转成毫秒）
+            page.goto(url, timeout=timeout * 1000)
+            # 动态内容"等它出现"：
+            if wait_selector:
+                # 等到指定元素出现在页面上（这正是动态加载完成的信号）
+                page.wait_for_selector(wait_selector, timeout=timeout * 1000)
+            else:
+                # 没配置选择器：等网络空闲（页面不再请求新资源，通常也加载完了）
+                page.wait_for_load_state("networkidle", timeout=timeout * 1000)
+            # 拿到渲染后的完整 HTML
+            return page.content()
+        finally:
+            # 无论成功失败都关闭浏览器（释放资源）
+            browser.close()
 
 
 def extract_value(node, attr: str) -> str:

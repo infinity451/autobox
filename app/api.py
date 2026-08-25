@@ -213,6 +213,8 @@ class CrawlTaskIn(BaseModel):
     cron: str = ""               # 定时表达式（空 = 不自动）
     max_items: int = 50          # 最多条数
     enabled: bool = True         # 是否启用
+    dynamic: bool = False        # 是否动态渲染（JS 加载，用浏览器渲染）
+    wait_selector: str = ""      # 等待选择器（动态页等到该元素出现再抓取）
 
 
 @router.get("/crawl/tasks")
@@ -233,6 +235,8 @@ def api_crawl_create(data: CrawlTaskIn) -> dict:
             cron=data.cron,
             max_items=data.max_items,
             enabled=data.enabled,
+            dynamic=data.dynamic,
+            wait_selector=data.wait_selector,
         )
     except ValueError as e:
         # 校验失败返回 400
@@ -255,6 +259,8 @@ def api_crawl_update(task_id: str, data: CrawlTaskIn) -> dict:
             cron=data.cron,
             max_items=data.max_items,
             enabled=data.enabled,
+            dynamic=data.dynamic,
+            wait_selector=data.wait_selector,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

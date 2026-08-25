@@ -39,6 +39,8 @@ def _row_to_task(row) -> dict:
         "cron": row["cron"],                             # 定时表达式
         "max_items": row["max_items"],                   # 最多条数
         "enabled": bool(row["enabled"]),                 # 是否启用
+        "dynamic": bool(row["dynamic"]),                 # 是否动态渲染（JS 加载）
+        "wait_selector": row["wait_selector"],           # 等待选择器
         "created_at": row["created_at"],                 # 创建时间
         "updated_at": row["updated_at"],                 # 更新时间
     }
@@ -86,12 +88,17 @@ def validate_task(task: dict) -> str | None:
     # 最多条数要是正整数（小于 1 就给 50）
     if task.get("max_items", 0) < 1:
         task["max_items"] = 50
+    # 动态页相关：配置了"等待选择器"就自动开启动态渲染
+    # （等待选择器是为了等 JS 内容出现，只有渲染模式才有意义）
+    if task.get("wait_selector", "").strip():
+        task["dynamic"] = True
     # 校验通过
     return None
 
 
 def create_task(name: str, url: str, item_selector: str, fields: list,
-                cron: str = "", max_items: int = 50, enabled: bool = True) -> dict:
+                cron: str = "", max_items: int = 50, enabled: bool = True,
+                dynamic: bool = False, wait_selector: str = "") -> dict:
     """创建一条采集任务。校验不通过时抛 ValueError。"""
     # 导入 models 的 new_id / now_str（生成编号和时间）
     from ..models import new_id, now_str
@@ -106,6 +113,8 @@ def create_task(name: str, url: str, item_selector: str, fields: list,
         "cron": cron.strip(),
         "max_items": max_items,
         "enabled": enabled,
+        "dynamic": dynamic,
+        "wait_selector": wait_selector.strip(),
         "created_at": now_str(),
         "updated_at": now_str(),
     }
@@ -117,13 +126,16 @@ def create_task(name: str, url: str, item_selector: str, fields: list,
     # 存数据库；fields 转成 JSON 文本
     database.execute(
         "INSERT INTO crawler_tasks "
-        "(id, name, url, item_selector, fields, cron, max_items, enabled, created_at, updated_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "(id, name, url, item_selector, fields, cron, max_items, enabled, dynamic, wait_selector, "
+        "created_at, updated_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (
             task["id"], task["name"], task["url"], task["item_selector"],
             json.dumps(fields, ensure_ascii=False),       # ensure_ascii=False 中文原样存
             task["cron"], task["max_items"],
             1 if enabled else 0,                          # True→1，False→0
+            1 if dynamic else 0,
+            task["wait_selector"],
             task["created_at"], task["updated_at"],
         ),
     )
@@ -132,7 +144,8 @@ def create_task(name: str, url: str, item_selector: str, fields: list,
 
 
 def update_task(task_id: str, name: str, url: str, item_selector: str, fields: list,
-                cron: str = "", max_items: int = 50, enabled: bool = True) -> dict | None:
+                cron: str = "", max_items: int = 50, enabled: bool = True,
+                dynamic: bool = False, wait_selector: str = "") -> dict | None:
     """更新一条采集任务。任务不存在返回 None。"""
     # 查一下原任务（拿创建时间）
     old = get_task(task_id)
@@ -149,6 +162,8 @@ def update_task(task_id: str, name: str, url: str, item_selector: str, fields: l
         "cron": cron.strip(),
         "max_items": max_items,
         "enabled": enabled,
+        "dynamic": dynamic,
+        "wait_selector": wait_selector.strip(),
         "created_at": old["created_at"],
         "updated_at": old["updated_at"],   # 用旧值占位，下面会刷新
     }
@@ -164,11 +179,12 @@ def update_task(task_id: str, name: str, url: str, item_selector: str, fields: l
     # 执行更新
     database.execute(
         "UPDATE crawler_tasks SET name=?, url=?, item_selector=?, fields=?, cron=?, "
-        "max_items=?, enabled=?, updated_at=? WHERE id=?",
+        "max_items=?, enabled=?, dynamic=?, wait_selector=?, updated_at=? WHERE id=?",
         (
             task["name"], task["url"], task["item_selector"],
             json.dumps(fields, ensure_ascii=False), task["cron"], task["max_items"],
-            1 if enabled else 0, task["updated_at"], task_id,
+            1 if enabled else 0, 1 if dynamic else 0,
+            task["wait_selector"], task["updated_at"], task_id,
         ),
     )
     # 返回更新后的任务
@@ -194,9 +210,10 @@ def toggle_task(task_id: str) -> dict | None:
     task = get_task(task_id)
     if task is None:
         return None
-    # 取反后更新
+    # 取反后更新（dynamic/wait_selector 也要带上，不然切换启用时会丢失这些配置）
     return update_task(
         task_id,
         task["name"], task["url"], task["item_selector"], task["fields"],
         task["cron"], task["max_items"], not task["enabled"],
+        task["dynamic"], task["wait_selector"],
     )

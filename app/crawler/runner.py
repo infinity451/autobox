@@ -69,8 +69,9 @@ def run_task(task_id: str) -> dict:
 
     # 执行采集；出错要记录并返回，不能让整个程序崩溃
     try:
-        # 第一步：抓网页
-        html = fetch_html(task["url"])
+        # 第一步：抓网页（动态页用浏览器渲染，静态页直接请求）
+        html = fetch_html(task["url"], dynamic=task.get("dynamic", False),
+                          wait_selector=task.get("wait_selector", ""))
         # 第二步：解析提取记录
         records = parse_items(html, task["item_selector"], fields, task["max_items"])
     except Exception as e:  # noqa: BLE001

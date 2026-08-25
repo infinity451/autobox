@@ -38,3 +38,11 @@
 2026-08-25 14:52:22,848 [INFO] apscheduler.scheduler: Scheduler has been shut down
 2026-08-25 14:52:22,855 [INFO] root: 网页服务已停止
 2026-08-25 14:52:23,258 [INFO] root: AutoBox 已退出
+2026-08-25 15:14:24,180 [INFO] root: AutoBox 启动中...
+2026-08-25 15:14:24,185 [INFO] root: 网页服务启动中: http://127.0.0.1:8000
+2026-08-25 15:14:24,253 [INFO] apscheduler.scheduler: Scheduler started
+2026-08-25 15:14:24,269 [INFO] apscheduler.scheduler: Added job "schedule_task.<locals>.<lambda>" to job store "default"
+2026-08-25 15:18:34,127 [INFO] root: 窗口关闭，正在停止服务
+2026-08-25 15:18:34,319 [INFO] apscheduler.scheduler: Scheduler has been shut down
+2026-08-25 15:18:34,328 [INFO] root: 网页服务已停止
+2026-08-25 15:18:34,655 [INFO] root: AutoBox 已退出

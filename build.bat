@@ -21,6 +21,7 @@ echo ============================================
 
 .venv\Scripts\pyinstaller.exe --noconfirm --clean --onefile --noconsole --name AutoBox ^
   --add-data "static;static" ^
+  --collect-all playwright ^
   --hidden-import uvicorn.logging ^
   --hidden-import uvicorn.loops.auto ^
   --hidden-import uvicorn.protocols.http.auto ^

@@ -101,6 +101,8 @@ def init_db() -> None:
                 cron           TEXT NOT NULL DEFAULT '',     -- 定时表达式（空=不自动采集）
                 max_items      INTEGER NOT NULL DEFAULT 50,  -- 最多采集多少条
                 enabled        INTEGER NOT NULL DEFAULT 1,   -- 是否启用
+                dynamic        INTEGER NOT NULL DEFAULT 0,   -- 是否动态渲染（1=用浏览器渲染 JS 内容）
+                wait_selector  TEXT NOT NULL DEFAULT '',     -- 等待选择器（动态页等到该元素出现再抓取）
                 created_at     TEXT NOT NULL,       -- 创建时间
                 updated_at     TEXT NOT NULL        -- 更新时间
             );
@@ -140,6 +142,31 @@ def init_db() -> None:
             );
             """
         )
+
+        # ---------- 迁移：给已有数据库补新列（幂等） ----------
+        # 功能升级时会给表加新列，但旧的数据库文件已经在磁盘上了，
+        # 直接 CREATE TABLE 不会改已有表。这里检测缺列就补上。
+        # dynamic / wait_selector 是"爬虫支持动态页面"（Playwright）新增的列
+        _ensure_column(conn, "crawler_tasks", "dynamic", "INTEGER NOT NULL DEFAULT 0")
+        _ensure_column(conn, "crawler_tasks", "wait_selector", "TEXT NOT NULL DEFAULT ''")
+
+
+def _ensure_column(conn, table: str, column: str, definition: str) -> None:
+    """给表补一列（如果列还不存在）。
+
+    参数：
+        conn:       数据库连接
+        table:      表名
+        column:     要确保存在的列名
+        definition: 列定义（如 "TEXT NOT NULL DEFAULT ''"）
+    """
+    # 查这个表当前有哪些列（PRAGMA table_info 返回列信息）
+    # 拿到所有列名，看缺不缺我们想要的那列
+    cols = [row["name"] for row in conn.execute(f"PRAGMA table_info({table})")]
+    # 列不存在才 ALTER TABLE 添加
+    if column not in cols:
+        # 给表加一列（SQLite 用 ALTER TABLE ADD COLUMN）
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
 
 
 def query(sql: str, params: tuple = ()) -> list[sqlite3.Row]:

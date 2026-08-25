@@ -1,0 +1,56 @@
+<!-- ============================================================
+  动态测试页：模拟"内容靠 JavaScript 动态加载"的网站。
+  访问地址：http://127.0.0.1:8000/static/test_dynamic.html
+  特点：初始 HTML 是空的（列表区没有内容），2 秒后 JS 才动态填充。
+  静态爬虫（requests）抓不到这里的任何内容；
+  动态爬虫（Playwright + 等待选择器）能等 JS 加载完再抓到。
+
+  采集器配置参考：
+    URL: http://127.0.0.1:8000/static/test_dynamic.html
+    ✔ 勾选"动态页面（JS 渲染）"
+    等待选择器: div.news-item   （等它出现再抓）
+    列表容器选择器: div.news-item
+    字段1: 标题 → h2 (text)
+    字段2: 链接 → a  (attr.href)
+    字段3: 日期 → .date (text)
+  ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>模拟动态新闻站 - 仅供测试</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 20px auto; }
+    .news-item { border: 1px solid #ddd; padding: 12px; margin-bottom: 10px; border-radius: 8px; }
+    .date { color: #888; font-size: 13px; }
+    h2 { margin: 4px 0; font-size: 18px; }
+    #loading { color: #888; }
+  </style>
+</head>
+<body>
+  <h1>模拟动态新闻列表</h1>
+
+  <!-- 初始提示：JS 还没加载，列表是空的 -->
+  <div id="loading">数据加载中…</div>
+  <!-- 列表容器：一开始是空的，JS 2 秒后往里面填充内容 -->
+  <div id="list"></div>
+
+  <script>
+    // 模拟动态加载：2 秒后用 JS 往 #list 里填充新闻（经典动态网站做法）
+    setTimeout(function () {
+      // 生成 5 条动态新闻的 HTML
+      var html = "";
+      for (var i = 1; i <= 5; i++) {
+        html += '<div class="news-item">'
+             +   '<h2>动态新闻第' + i + '条</h2>'
+             +   '<a href="/news/dyn' + (100 + i) + '">查看详情</a>'
+             +   '<div class="date">2026-08-2' + i + '</div>'
+             + '</div>';
+      }
+      // 填充到列表容器，并隐藏"加载中"提示
+      document.getElementById("list").innerHTML = html;
+      document.getElementById("loading").style.display = "none";
+    }, 2000);   // 2 秒后执行（模拟 JS 异步加载耗时）
+  </script>
+</body>
+</html>
