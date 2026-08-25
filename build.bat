@@ -19,7 +19,7 @@ echo   Building AutoBox (desktop app), 1-3 min...
 echo   Output: dist\AutoBox.exe
 echo ============================================
 
-.venv\Scripts\pyinstaller.exe --noconfirm --clean --onefile --name AutoBox ^
+.venv\Scripts\pyinstaller.exe --noconfirm --clean --onefile --noconsole --name AutoBox ^
   --add-data "static;static" ^
   --hidden-import uvicorn.logging ^
   --hidden-import uvicorn.loops.auto ^

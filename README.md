@@ -39,22 +39,19 @@
 python -m venv .venv                # 创建干净环境（隔离系统 Python）
 .venv\Scripts\python -m pip install -r requirements.txt   # 在 venv 里装依赖
 
-# 2. 启动（用 venv 里的 Python，别用系统 Python）
-.venv\Scripts\python main.py
-
-# 3. 浏览器打开
-http://127.0.0.1:8000
+# 2. 启动桌面软件（弹出 AutoBox 窗口）
+.venv\Scripts\python desktop.py
 ```
 
-**或者**：直接双击根目录的 `启动.bat`——自动用 venv 启动服务并打开浏览器（一键启动，以后都这么用）。
+**或者**：直接双击根目录的 `启动.bat`（一键启动桌面软件）。
 
 ## 打包成桌面应用 exe（发给身边的人用）
 
-AutoBox 是**真正的桌面应用**：双击 exe 弹出**独立原生窗口**（不是浏览器标签页），关窗即退出。
+AutoBox 是**真正的桌面软件**：双击 exe 弹出**独立原生窗口**（无控制台黑窗、无浏览器标签页），关窗即退出。
 
 ```bash
 # 打包（双击 build.bat 或运行下面的命令，入口是 desktop.py）
-.venv\Scripts\pyinstaller --noconfirm --clean --onefile --name AutoBox ^
+.venv\Scripts\pyinstaller --noconfirm --clean --onefile --noconsole --name AutoBox ^
   --add-data "static;static" ^
   --hidden-import uvicorn.logging ^
   --hidden-import uvicorn.loops.auto ^
@@ -69,9 +66,10 @@ AutoBox 是**真正的桌面应用**：双击 exe 弹出**独立原生窗口**�
 
 **使用方法**：把 `AutoBox.exe` 发给别人（微信/QQ 传文件），对方**双击即用**——弹出 AutoBox 窗口（用系统 WebView2 引擎，Win10/11 自带），关窗即停止。
 
-**两种运行模式**：
-- `desktop.py` / 打包的 exe：**桌面窗口模式**（默认，推荐给用户）
-- `main.py`：网页模式（开发调试用，浏览器访问 http://127.0.0.1:8000）
+**桌面软件特性**：
+- 单实例保护：重复打开会提示"已在运行"（防止两个软件抢端口）
+- 日志落盘：运行日志写进 exe 旁的 `data/autobox.log`（出问题可查）
+- 无控制台：干净的原生窗口体验
 
 **注意事项**：
 - 首次运行会在 exe **旁边**自动创建 `data` 文件夹（用户数据都在里面，备份/迁移就复制这个文件夹）
@@ -99,9 +97,8 @@ AutoBox 是**真正的桌面应用**：双击 exe 弹出**独立原生窗口**�
 autobox/
 ├─ README.md                ← 本文件：项目总览
 ├─ requirements.txt         ← 依赖清单（pip install 安装）
-├─ main.py                  ← 网页模式入口（python main.py，开发调试用）
-├─ desktop.py               ← 桌面模式入口（原生窗口，打包 exe 用）
-├─ build.bat                ← 打包脚本（生成 dist\AutoBox.exe 桌面应用）
+├─ desktop.py               ← 软件入口（唯一：原生窗口，双击运行/打包入口）
+├─ build.bat                ← 打包脚本（生成 dist\AutoBox.exe 桌面软件）
 ├─ 启动.bat                 ← 开发模式一键启动（双击即用）
 ├─ fetch_github.py          ← 工具脚本：搜 GitHub 同类项目（研究用）
 ├─ fetch_repos.py           ← 工具脚本：查知名开源项目详情（研究用）
@@ -109,6 +106,7 @@ autobox/
 │  ├─ README.md             ← app 目录说明
 │  ├─ __init__.py           ← 包身份证
 │  ├─ paths.py              ← 统一路径工具（开发/打包双模式）
+│  ├─ webapp.py             ← 应用工厂：FastAPI 应用 + 生命周期管理
 │  ├─ database.py           ← 数据层：SQLite 建表/读写/日志
 │  ├─ models.py             ← 规则模型：触发器/条件/动作定义与校验
 │  ├─ api.py                ← 接口层：网页请求 ↔ Python 调用
@@ -171,7 +169,8 @@ autobox/
 
 ## 代码阅读顺序（新手友好）
 
-后端：`main.py` → `app/models.py` → `app/engine/rules.py` → `app/engine/matcher.py`
+入口：`desktop.py` → `app/webapp.py`（应用创建）
+后端：`app/models.py` → `app/engine/rules.py` → `app/engine/matcher.py`
 → `app/engine/actions.py` → `app/engine/triggers.py` → `app/engine/scheduler.py`
 前端：`static/js/api.js` → `static/js/index.js` → `static/js/rules.js`
 

@@ -37,4 +37,4 @@ watchdog 返回反斜杠，用户可能填正斜杠，直接比较永远不相�
 ## 怎么测试
 
 - `rules.py`、`matcher.py`、`actions.py` 可以单独用 `python -c "..."` 测试
-- 完整链路测试：启动 `python main.py`，网页上建规则，往监控目录丢文件，看日志
+- 完整链路测试：启动 `python desktop.py`（或双击 启动.bat），软件里建规则，往监控目录丢文件，看日志

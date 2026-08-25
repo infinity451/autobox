@@ -1,33 +1,23 @@
 # -*- coding: utf-8 -*-
-"""程序入口：启动整个 AutoBox。
+"""Web 应用工厂：创建 AutoBox 的 FastAPI 应用。
 
-运行方式（开发模式，在项目根目录）：
-    python main.py
+这是"软件的唯一后端"：
+- 提供全部接口（规则/采集/批量/定时/宏）
+- 托管静态页面（桌面窗口加载的就是这些页面）
+- 管理生命周期（启动时初始化引擎，关闭时优雅清理）
 
-运行方式（打包模式）：
-    双击 AutoBox.exe（见 build.bat 打包说明）
-
-启动后会自动打开浏览器 http://127.0.0.1:8000。
+desktop.py（桌面窗口）和调试入口都从这里拿 app，不再直接写第二份。
 """
 
 # from __future__ import annotations：允许提前使用新式类型注解
 from __future__ import annotations
 
-# 导入 os：读取环境变量（控制是否自动打开浏览器，测试时用）
-import os
-# 导入 threading：开一个后台线程延迟打开浏览器（等服务起来再开）
-import threading
-# 导入 webbrowser：调用系统默认浏览器打开网页
-import webbrowser
-# 导入 contextlib 的 asynccontextmanager：实现"启动时初始化 / 关闭时清理"的钩子
-from contextlib import asynccontextmanager
-
 # 导入 FastAPI 框架核心类：
 # FastAPI 是网页框架（提供接口服务），StaticFiles 用来托管静态文件（HTML/CSS/JS）
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-# 导入 uvicorn：把 FastAPI 应用跑起来的服务器（就像“发动机点火器”）
-import uvicorn
+# 导入 contextlib 的 asynccontextmanager：实现"启动时初始化 / 关闭时清理"的钩子
+from contextlib import asynccontextmanager
 
 # 导入本项目模块：
 # init_db：建表；engine：全局引擎单例；router：API 路由
@@ -37,13 +27,11 @@ from app.api import router
 # 导入统一路径工具（打包/开发两种模式都正确）
 from app.paths import data_dir, resource_dir
 
-# ---------- 生命周期管理（优雅退出） ----------
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期：启动时初始化，关闭时清理。
 
-    这是 FastAPI 官方推荐的生命周期写法：
     yield 之前 = 服务启动时执行（初始化）
     yield 之后 = 服务关闭时执行（清理）
     """
@@ -77,7 +65,7 @@ async def lifespan(app: FastAPI):
     engine.stop()
 
 
-# 创建 FastAPI 应用实例（title 是文档页显示的名字；lifespan 负责初始化/清理）
+# 创建 FastAPI 应用实例（lifespan 负责初始化/清理）
 app = FastAPI(title="AutoBox 自动化工具箱", lifespan=lifespan)
 
 # 把 API 路由挂到应用上（app/api.py 里定义的所有 /api 接口）
@@ -93,8 +81,7 @@ app.mount("/static", StaticFiles(directory=str(resource_dir() / "static")), name
 app.mount("/exports", StaticFiles(directory=str(data_dir() / "exports")), name="exports")
 
 
-# 编写一个简单的首页入口：
-# 访问 http://127.0.0.1:8000/ 时，直接返回 static/index.html 文件内容
+# 首页入口：访问 http://127.0.0.1:8000/ 时返回 static/index.html
 @app.get("/")
 def index():
     # 读取 index.html 文件内容（encoding="utf-8" 保证中文不乱码）
@@ -103,23 +90,3 @@ def index():
     from fastapi.responses import HTMLResponse
 
     return HTMLResponse(html)
-
-
-def main() -> None:
-    """程序启动函数。"""
-    # 自动打开浏览器（2 秒后等服务起来了再开）
-    # 环境变量 AUTOBOX_NO_BROWSER=1 时跳过（自动化测试用，避免弹浏览器）
-    if os.environ.get("AUTOBOX_NO_BROWSER") != "1":
-        # Timer 开一个延迟线程：2 秒后调用 webbrowser.open 打开首页
-        threading.Timer(2.0, lambda: webbrowser.open("http://127.0.0.1:8000")).start()
-
-    # 启动网页服务器
-    # host="127.0.0.1" 只在本机开放（局域网其他人暂时访问不了，安全）
-    # port=8000 网页端口；访问 http://127.0.0.1:8000
-    uvicorn.run(app, host="127.0.0.1", port=8000)
-
-
-# 这个条件的意思是：只有“直接运行本文件”时才执行 main()
-# （被别的文件 import 时不执行，避免误启动服务器）
-if __name__ == "__main__":
-    main()
