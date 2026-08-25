@@ -48,6 +48,29 @@ http://127.0.0.1:8000
 
 **或者**：直接双击根目录的 `启动.bat`——自动用 venv 启动服务并打开浏览器（一键启动，以后都这么用）。
 
+## 打包成 exe（发给身边的人用）
+
+```bash
+# 1. 打包（双击 build.bat 或运行下面的命令）
+.venv\Scripts\pyinstaller --noconfirm --clean --onefile --name AutoBox ^
+  --add-data "static;static" ^
+  --hidden-import uvicorn.logging ^
+  --hidden-import uvicorn.loops.auto ^
+  --hidden-import uvicorn.protocols.http.auto ^
+  --hidden-import uvicorn.protocols.websockets.auto ^
+  --hidden-import uvicorn.lifespan.on ^
+  main.py
+
+# 2. 产物：dist\AutoBox.exe（约 20MB 单文件）
+```
+
+**使用方法**：把 `AutoBox.exe` 发给别人（微信/QQ 传文件），对方**双击即用**——自动启动服务 + 打开浏览器。关掉黑色控制台窗口就停止。
+
+**注意事项**：
+- 首次运行会在 exe **旁边**自动创建 `data` 文件夹（用户数据都在里面，备份/迁移就复制这个文件夹）
+- 杀毒软件可能误报（PyInstaller 打包的常见现象）：添加信任即可，源码全在仓库里可自查
+- exe 启动会自动打开浏览器；自动化测试时设环境变量 `AUTOBOX_NO_BROWSER=1` 可跳过
+
 ### 为什么用虚拟环境（venv）？
 
 - 每个项目的依赖**装在自己项目的 .venv 里**，互不干扰（你电脑上有 4 个 Python，混装容易出"装了库却 import 不到"的坑）
@@ -64,12 +87,15 @@ http://127.0.0.1:8000
 autobox/
 ├─ README.md                ← 本文件：项目总览
 ├─ requirements.txt         ← 依赖清单（pip install 安装）
-├─ main.py                  ← 程序入口（python main.py 启动）
+├─ main.py                  ← 程序入口（python main.py 启动 / 打包入口）
+├─ build.bat                ← 打包脚本（生成 dist\AutoBox.exe）
+├─ 启动.bat                 ← 开发模式一键启动（双击即用）
 ├─ fetch_github.py          ← 工具脚本：搜 GitHub 同类项目（研究用）
 ├─ fetch_repos.py           ← 工具脚本：查知名开源项目详情（研究用）
 ├─ app/                     ← 后端（Python）
 │  ├─ README.md             ← app 目录说明
 │  ├─ __init__.py           ← 包身份证
+│  ├─ paths.py              ← 统一路径工具（开发/打包双模式）
 │  ├─ database.py           ← 数据层：SQLite 建表/读写/日志
 │  ├─ models.py             ← 规则模型：触发器/条件/动作定义与校验
 │  ├─ api.py                ← 接口层：网页请求 ↔ Python 调用
@@ -146,9 +172,9 @@ autobox/
 | 2 | 网页采集器（配置式爬虫 → CSV，含定时，参考 EasySpider 交互） | ✅ 完成（可跑通） |
 | 3 | 批量文件魔法 + 定时提醒中心（含定时关机） | ✅ 完成（可跑通） |
 | 4 | 宏录制器（参考 maCrow，pynput） | ✅ 完成（可跑通） |
-| 5 | 界面打磨 + 打包 exe + 模板分享 | ⏳ |
+| 5 | 打包 exe（PyInstaller）+ 路径统一 + 自动开浏览器 + 优雅退出 | ✅ 完成（dist\AutoBox.exe 已验证可运行） |
 | 后续 | 网页变化触发器（参考 Huginn 事件模型）、规则联动（参考 n8n 节点理念）、通知模块接 Apprise 库 | 规划中 |
-| 优化 | 用户问题清单 7 项（补单测/_busy 清理/refresh 增量/目录校验/定时规则校验/优雅退出/版本管理） | 待优化阶段 |
+| 优化 | 用户问题清单 7 项（补单测/_busy 清理/refresh 增量/目录校验/定时规则校验/版本管理——优雅退出已在第 5 阶段顺带解决） | 待优化阶段 |
 
 ## 灵感来源（GitHub 同类项目，研究记录）
 

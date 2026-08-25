@@ -5,6 +5,11 @@ __pycache__/
 # 运行时数据（数据库自动生成，不提交）
 data/autobox.db
 
+# 打包产物（PyInstaller）
+dist/
+build/
+*.spec
+
 # 虚拟环境
 .venv/
 venv/

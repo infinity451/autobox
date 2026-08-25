@@ -21,14 +21,16 @@ from pathlib import Path
 
 # 导入数据库模块（查任务、写运行记录）
 from .. import database
+# 导入统一路径工具（数据目录在开发/打包两种模式下都正确）
+from ..paths import data_dir
 # 导入抓取解析引擎
 from .fetcher import fetch_html, parse_items
 # 导入任务管理（查任务）
 from .tasks import get_task
 
-# 导出目录：data/exports/（CSV 文件都放这里）
-# __file__ 是 runner.py 的路径，往上三级 = 项目根，再拼 exports
-EXPORT_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "exports"
+# 导出目录：数据目录/exports/（CSV 文件都放这里）
+# 用统一路径工具而不是相对 __file__ 拼路径（打包成 exe 后也能正确找到）
+EXPORT_DIR = data_dir() / "exports"
 
 
 def _write_csv(path: Path, fieldnames: list[str], records: list[dict]) -> None:

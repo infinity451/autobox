@@ -19,10 +19,12 @@ import threading
 # 导入 Path：用来处理文件路径（跨系统兼容的路径写法，比如 Windows 的 D:\ 和 Linux 的 / 都能处理）
 from pathlib import Path
 
-# 计算数据库文件的完整路径：
-# __file__ 是“本文件（database.py）的路径”，parent 是它的上级目录（app/），
-# 再 parent 就是项目根目录（autobox/），最后拼上 data/autobox.db
-DB_PATH = Path(__file__).resolve().parent.parent / "data" / "autobox.db"
+# 导入统一路径工具（data_dir() 返回数据目录；开发/打包两种模式它都知道该用哪）
+from .paths import data_dir
+
+# 计算数据库文件的完整路径：数据目录 / autobox.db
+# 用统一路径工具而不是自己拼路径 —— 打包成 exe 后也能正确找到数据位置
+DB_PATH = data_dir() / "autobox.db"
 
 # 创建一个线程锁对象（线程锁 = 一把“门锁”，进门前拿锁，出来还锁，防止两人同时进门）
 # 后面所有写数据库的地方都会先拿这把锁
