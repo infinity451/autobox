@@ -98,3 +98,47 @@ function runCrawlTask(id) {
 function getCrawlRuns() {
   return request("/api/crawl/runs");
 }
+
+// ============ 批量文件魔法接口 ============
+
+// 预览重命名（POST /api/batch/rename/preview）
+function previewBatchRename(body) {
+  return request("/api/batch/rename/preview", "POST", body);
+}
+
+// 执行重命名（POST /api/batch/rename/execute）
+function executeBatchRename(body) {
+  return request("/api/batch/rename/execute", "POST", body);
+}
+
+// ============ 定时提醒中心接口 ============
+
+// 获取所有定时任务（GET /api/timer/tasks）
+function getTimerTasks() {
+  return request("/api/timer/tasks");
+}
+
+// 创建定时任务（POST /api/timer/tasks）
+function createTimerTask(body) {
+  return request("/api/timer/tasks", "POST", body);
+}
+
+// 更新定时任务（PUT /api/timer/tasks/{id}）
+function updateTimerTask(id, body) {
+  return request(`/api/timer/tasks/${id}`, "PUT", body);
+}
+
+// 删除定时任务（DELETE /api/timer/tasks/{id}）
+function deleteTimerTask(id) {
+  return request(`/api/timer/tasks/${id}`, "DELETE");
+}
+
+// 切换任务启用/暂停（POST /api/timer/tasks/{id}/toggle）
+function toggleTimerTask(id) {
+  return request(`/api/timer/tasks/${id}/toggle`, "POST");
+}
+
+// 立即执行一次（POST /api/timer/tasks/{id}/run）
+function runTimerTask(id) {
+  return request(`/api/timer/tasks/${id}/run`, "POST");
+}

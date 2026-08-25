@@ -294,3 +294,127 @@ def api_crawl_run(task_id: str) -> dict:
 def api_crawl_runs(task_id: str | None = None) -> dict:
     """接口：查询采集运行历史。"""
     return {"runs": list_runs(task_id)}
+
+
+# ============================================================
+# 批量文件魔法接口（第 3 阶段）
+# ============================================================
+
+# 导入批量重命名引擎
+from .batch.rename import execute_rename, preview_rename
+
+
+class BatchRenameIn(BaseModel):
+    """批量重命名请求（前端传来的数据）。"""
+    directory: str               # 要处理的文件夹
+    mode: str                    # 模式：prefix/suffix/replace/sequence
+    params: dict = {}            # 模式参数，如 {"prefix": "工作_"}
+    max_items: int = 200         # 最多处理多少个文件
+
+
+@router.post("/batch/rename/preview")
+def api_batch_preview(data: BatchRenameIn) -> dict:
+    """接口：预览重命名结果（不真正改名）。"""
+    # 调用引擎的预览函数，返回 旧名→新名 对照表
+    return preview_rename(data.directory, data.mode, data.params, data.max_items)
+
+
+@router.post("/batch/rename/execute")
+def api_batch_execute(data: BatchRenameIn) -> dict:
+    """接口：执行重命名（真正改名）。"""
+    return execute_rename(data.directory, data.mode, data.params, data.max_items)
+
+
+# ============================================================
+# 定时提醒中心接口（第 3 阶段）
+# ============================================================
+
+# 导入定时任务模块
+from .timer.tasks import (
+    create_task as timer_create_task,
+    delete_task as timer_delete_task,
+    list_tasks as timer_list_tasks,
+    toggle_task as timer_toggle_task,
+    update_task as timer_update_task,
+)
+from .timer.runner import run_task as timer_run_task, sync_schedules as timer_sync_schedules
+
+
+class TimerTaskIn(BaseModel):
+    """定时任务（前端传来的数据）。"""
+    name: str                    # 任务名字
+    action: str                  # 动作：notify/shutdown/restart/sleep/open
+    cron: str                    # 定时表达式
+    message: str = ""            # 提醒内容（notify 用）
+    program: str = ""            # 程序路径（open 用）
+    enabled: bool = True         # 是否启用
+
+
+@router.get("/timer/tasks")
+def api_timer_list() -> dict:
+    """接口：获取所有定时任务。"""
+    return {"tasks": timer_list_tasks()}
+
+
+@router.post("/timer/tasks")
+def api_timer_create(data: TimerTaskIn) -> dict:
+    """接口：创建定时任务。"""
+    try:
+        task = timer_create_task(
+            name=data.name,
+            action=data.action,
+            cron=data.cron,
+            message=data.message,
+            program=data.program,
+            enabled=data.enabled,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    timer_sync_schedules()
+    return {"task": task}
+
+
+@router.put("/timer/tasks/{task_id}")
+def api_timer_update(task_id: str, data: TimerTaskIn) -> dict:
+    """接口：更新定时任务。"""
+    try:
+        task = timer_update_task(
+            task_id,
+            name=data.name,
+            action=data.action,
+            cron=data.cron,
+            message=data.message,
+            program=data.program,
+            enabled=data.enabled,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if task is None:
+        raise HTTPException(status_code=404, detail="任务不存在")
+    timer_sync_schedules()
+    return {"task": task}
+
+
+@router.delete("/timer/tasks/{task_id}")
+def api_timer_delete(task_id: str) -> dict:
+    """接口：删除定时任务。"""
+    if not timer_delete_task(task_id):
+        raise HTTPException(status_code=404, detail="任务不存在")
+    timer_sync_schedules()
+    return {"ok": True}
+
+
+@router.post("/timer/tasks/{task_id}/toggle")
+def api_timer_toggle(task_id: str) -> dict:
+    """接口：切换任务启用/暂停。"""
+    task = timer_toggle_task(task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="任务不存在")
+    timer_sync_schedules()
+    return {"task": task}
+
+
+@router.post("/timer/tasks/{task_id}/run")
+def api_timer_run(task_id: str) -> dict:
+    """接口：立即执行一次定时任务（测试弹窗用）。"""
+    return timer_run_task(task_id)

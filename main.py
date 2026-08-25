@@ -65,10 +65,14 @@ def main() -> None:
     # 第二步：启动自动化引擎（加载规则、开始监控文件、启动定时器）
     engine.start()
     # 第三步：同步采集任务的定时计划（网页采集器模块，配置了 cron 的任务开始自动采集）
-    from app.crawler.runner import sync_schedules
+    from app.crawler.runner import sync_schedules as sync_crawl
 
-    sync_schedules()
-    # 第四步：启动网页服务器
+    sync_crawl()
+    # 第四步：同步定时提醒中心的任务调度（定时提醒/关机/打开程序）
+    from app.timer.runner import sync_schedules as sync_timer
+
+    sync_timer()
+    # 第五步：启动网页服务器
     # host="127.0.0.1" 只在本机开放（局域网其他人暂时访问不了，安全）
     # port=8000 网页端口；访问 http://127.0.0.1:8000
     uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -114,6 +114,19 @@ def init_db() -> None:
                 message    TEXT,                -- 说明（出错时是错误信息）
                 created_at TEXT NOT NULL        -- 运行时间
             );
+
+            -- 定时任务表（定时提醒中心模块）：保存到点要做什么
+            CREATE TABLE IF NOT EXISTS timer_tasks (
+                id         TEXT PRIMARY KEY,    -- 任务唯一编号
+                name       TEXT NOT NULL,       -- 任务名字（如“喝水提醒”）
+                action     TEXT NOT NULL,       -- 动作：notify/shutdown/restart/sleep/open
+                cron       TEXT NOT NULL,       -- 定时表达式（如 0 9 * * * = 每天 9 点）
+                message    TEXT NOT NULL DEFAULT '',   -- 提醒内容（提醒类用）
+                program    TEXT NOT NULL DEFAULT '',   -- 程序路径（打开程序类用）
+                enabled    INTEGER NOT NULL DEFAULT 1,  -- 是否启用
+                created_at TEXT NOT NULL,       -- 创建时间
+                updated_at TEXT NOT NULL        -- 更新时间
+            );
             """
         )
 

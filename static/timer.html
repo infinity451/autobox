@@ -1,0 +1,80 @@
+<!-- ============================================================
+  定时提醒中心：定时提醒 / 定时关机 / 重启 / 休眠 / 打开程序
+  ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>定时提醒中心 - AutoBox</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- 顶部导航 -->
+  <div class="topbar">
+    <span class="topbar-title">⏰ 定时提醒中心</span>
+    <a href="/">← 返回首页</a>
+  </div>
+
+  <div class="container">
+
+    <!-- ============ 任务列表 ============ -->
+    <div class="card">
+      <h3 class="card-title">我的定时任务</h3>
+      <div id="taskList">
+        <div class="empty-tip">加载中…</div>
+      </div>
+    </div>
+
+    <!-- ============ 新建/编辑任务 ============ -->
+    <div class="card">
+      <h3 class="card-title" id="formTitle">新建定时任务</h3>
+
+      <!-- 任务名字 -->
+      <label>任务名字</label>
+      <input id="taskName" placeholder="例：下班提醒">
+
+      <!-- 动作类型 -->
+      <label>到点做什么</label>
+      <select id="taskAction" onchange="updateActionUI()">
+        <option value="notify">弹窗提醒</option>
+        <option value="shutdown">关机（60 秒缓冲）</option>
+        <option value="restart">重启（60 秒缓冲）</option>
+        <option value="sleep">休眠</option>
+        <option value="open">打开程序</option>
+      </select>
+
+      <!-- cron 表达式 -->
+      <label>时间（cron 表达式：分 时 日 月 周）</label>
+      <input id="taskCron" placeholder="例：0 18 * * 1-5 表示周一到周五 18:00">
+      <div class="muted" style="font-size:12px;">
+        常用：每天 9 点 = 0 9 * * * ｜ 每天 18 点 = 0 18 * * * ｜ 每周五 17 点 = 0 17 * * 5
+      </div>
+
+      <!-- 提醒内容（notify 用） -->
+      <div id="wrapMessage">
+        <label>提醒内容</label>
+        <input id="taskMessage" placeholder="例：该喝水啦，起来活动一下">
+      </div>
+
+      <!-- 程序路径（open 用） -->
+      <div id="wrapProgram" style="display:none;">
+        <label>程序路径</label>
+        <input id="taskProgram" placeholder="例：C:/Windows/notepad.exe">
+      </div>
+
+      <!-- 保存按钮 -->
+      <div class="mt-16" style="display:flex; gap:12px;">
+        <button class="btn btn-primary" onclick="saveTask()">保存任务</button>
+        <button class="btn btn-ghost" onclick="resetForm()" id="cancelBtn" style="display:none;">取消编辑</button>
+      </div>
+      <div id="formError" class="mt-8" style="color:#e5484d; font-size:13px;"></div>
+    </div>
+
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/timer.js"></script>
+</body>
+</html>

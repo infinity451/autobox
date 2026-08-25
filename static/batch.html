@@ -1,0 +1,95 @@
+<!-- ============================================================
+  批量文件魔法：批量重命名工具
+  页面流程：填文件夹 → 选模式填参数 → 点预览看对照表 → 确认后执行
+  安全原则：先预览后执行，冲突项自动跳过，绝不静默覆盖
+  ============================================================ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>批量文件魔法 - AutoBox</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- 顶部导航 -->
+  <div class="topbar">
+    <span class="topbar-title">🪄 批量文件魔法</span>
+    <a href="/">← 返回首页</a>
+  </div>
+
+  <div class="container">
+
+    <!-- ============ 配置区 ============ -->
+    <div class="card">
+      <h3 class="card-title">批量重命名</h3>
+
+      <!-- 目标文件夹 -->
+      <label>目标文件夹</label>
+      <input id="batchDir" placeholder="例：D:/Learn/autobox/data/test_batch">
+
+      <!-- 重命名模式 -->
+      <label>重命名模式</label>
+      <select id="batchMode" onchange="updateModeUI()">
+        <option value="prefix">加前缀（原名前加文字）</option>
+        <option value="suffix">加后缀（扩展名前加文字）</option>
+        <option value="replace">替换（把名字里的某段文字换掉）</option>
+        <option value="sequence">加序号（001_原名）</option>
+      </select>
+
+      <!-- 前缀参数（prefix 模式用） -->
+      <div id="paramPrefix" class="mode-params">
+        <label>前缀文字</label>
+        <input id="prefixText" placeholder="例：工作_">
+      </div>
+
+      <!-- 后缀参数（suffix 模式用） -->
+      <div id="paramSuffix" class="mode-params" style="display:none;">
+        <label>后缀文字</label>
+        <input id="suffixText" placeholder="例：_终版">
+      </div>
+
+      <!-- 替换参数（replace 模式用） -->
+      <div id="paramReplace" class="mode-params" style="display:none;">
+        <label>查找文字</label>
+        <input id="findText" placeholder="例：副本">
+        <label>替换成</label>
+        <input id="replaceText" placeholder="例：（留空=删除这段文字）">
+      </div>
+
+      <!-- 序号参数（sequence 模式用） -->
+      <div id="paramSequence" class="mode-params" style="display:none;">
+        <label>序号位置</label>
+        <select id="seqPosition">
+          <option value="prefix">放在最前面（001_原名）</option>
+          <option value="suffix">放在后面（原名_001）</option>
+        </select>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="mt-16" style="display:flex; gap:12px;">
+        <button class="btn btn-primary" onclick="doPreview()">① 预览</button>
+        <button class="btn btn-danger" onclick="doExecute()" id="execBtn" disabled>② 确认执行</button>
+      </div>
+      <div id="batchError" class="mt-8" style="color:#e5484d; font-size:13px;"></div>
+    </div>
+
+    <!-- ============ 预览结果区 ============ -->
+    <div class="card" id="previewCard" style="display:none;">
+      <h3 class="card-title" id="previewTitle">预览</h3>
+      <div id="previewList"></div>
+    </div>
+
+    <!-- ============ 执行结果区 ============ -->
+    <div class="card" id="resultCard" style="display:none;">
+      <h3 class="card-title">执行结果</h3>
+      <div id="resultBody"></div>
+    </div>
+
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/batch.js"></script>
+</body>
+</html>
