@@ -48,10 +48,12 @@ http://127.0.0.1:8000
 
 **或者**：直接双击根目录的 `启动.bat`——自动用 venv 启动服务并打开浏览器（一键启动，以后都这么用）。
 
-## 打包成 exe（发给身边的人用）
+## 打包成桌面应用 exe（发给身边的人用）
+
+AutoBox 是**真正的桌面应用**：双击 exe 弹出**独立原生窗口**（不是浏览器标签页），关窗即退出。
 
 ```bash
-# 1. 打包（双击 build.bat 或运行下面的命令）
+# 打包（双击 build.bat 或运行下面的命令，入口是 desktop.py）
 .venv\Scripts\pyinstaller --noconfirm --clean --onefile --name AutoBox ^
   --add-data "static;static" ^
   --hidden-import uvicorn.logging ^
@@ -59,17 +61,27 @@ http://127.0.0.1:8000
   --hidden-import uvicorn.protocols.http.auto ^
   --hidden-import uvicorn.protocols.websockets.auto ^
   --hidden-import uvicorn.lifespan.on ^
-  main.py
+  --hidden-import webview.platforms.edgechromium ^
+  desktop.py
 
-# 2. 产物：dist\AutoBox.exe（约 20MB 单文件）
+# 产物：dist\AutoBox.exe（约 23MB 单文件）
 ```
 
-**使用方法**：把 `AutoBox.exe` 发给别人（微信/QQ 传文件），对方**双击即用**——自动启动服务 + 打开浏览器。关掉黑色控制台窗口就停止。
+**使用方法**：把 `AutoBox.exe` 发给别人（微信/QQ 传文件），对方**双击即用**——弹出 AutoBox 窗口（用系统 WebView2 引擎，Win10/11 自带），关窗即停止。
+
+**两种运行模式**：
+- `desktop.py` / 打包的 exe：**桌面窗口模式**（默认，推荐给用户）
+- `main.py`：网页模式（开发调试用，浏览器访问 http://127.0.0.1:8000）
 
 **注意事项**：
 - 首次运行会在 exe **旁边**自动创建 `data` 文件夹（用户数据都在里面，备份/迁移就复制这个文件夹）
 - 杀毒软件可能误报（PyInstaller 打包的常见现象）：添加信任即可，源码全在仓库里可自查
-- exe 启动会自动打开浏览器；自动化测试时设环境变量 `AUTOBOX_NO_BROWSER=1` 可跳过
+- 系统需有 WebView2 Runtime（Win10/11 一般自带；老系统可到微软官网安装）
+
+### 桌面模式实现原理（一句话）
+
+后台线程启动本地网页服务（uvicorn）+ pywebview 开原生窗口加载它；
+窗口关闭时优雅停止服务（`window.events.closing` 事件），数据全部在本机。
 
 ### 为什么用虚拟环境（venv）？
 
@@ -87,8 +99,9 @@ http://127.0.0.1:8000
 autobox/
 ├─ README.md                ← 本文件：项目总览
 ├─ requirements.txt         ← 依赖清单（pip install 安装）
-├─ main.py                  ← 程序入口（python main.py 启动 / 打包入口）
-├─ build.bat                ← 打包脚本（生成 dist\AutoBox.exe）
+├─ main.py                  ← 网页模式入口（python main.py，开发调试用）
+├─ desktop.py               ← 桌面模式入口（原生窗口，打包 exe 用）
+├─ build.bat                ← 打包脚本（生成 dist\AutoBox.exe 桌面应用）
 ├─ 启动.bat                 ← 开发模式一键启动（双击即用）
 ├─ fetch_github.py          ← 工具脚本：搜 GitHub 同类项目（研究用）
 ├─ fetch_repos.py           ← 工具脚本：查知名开源项目详情（研究用）
