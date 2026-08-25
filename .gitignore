@@ -2,8 +2,8 @@
 __pycache__/
 *.pyc
 
-# 运行时数据（数据库自动生成，不提交）
-data/autobox.db
+# 运行时数据（整个 data/ 是本地生成的测试数据 + 数据库，不提交）
+data/
 
 # 打包产物（PyInstaller）
 dist/
