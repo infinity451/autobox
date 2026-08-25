@@ -33,64 +33,10 @@
 
 **五个模块全部完成！**
 
-## 快速开始
-
-```bash
-# 1.（首次）创建虚拟环境并安装依赖（项目根目录执行）
-python -m venv .venv                # 创建干净环境（隔离系统 Python）
-.venv\Scripts\python -m pip install -r requirements.txt   # 在 venv 里装依赖
-
-# 2. 启动桌面软件（弹出 AutoBox 窗口）
-.venv\Scripts\python desktop.py
-```
-
-**或者**：直接双击根目录的 `启动.bat`（一键启动桌面软件）。
-
-## 打包成桌面应用 exe（发给身边的人用）
-
-AutoBox 是**真正的桌面软件**：双击 exe 弹出**独立原生窗口**（无控制台黑窗、无浏览器标签页），关窗即退出。
-
-```bash
-# 打包（双击 build.bat 或运行下面的命令，入口是 desktop.py）
-.venv\Scripts\pyinstaller --noconfirm --clean --onefile --noconsole --name AutoBox ^
-  --add-data "static;static" ^
-  --hidden-import uvicorn.logging ^
-  --hidden-import uvicorn.loops.auto ^
-  --hidden-import uvicorn.protocols.http.auto ^
-  --hidden-import uvicorn.protocols.websockets.auto ^
-  --hidden-import uvicorn.lifespan.on ^
-  --hidden-import webview.platforms.edgechromium ^
-  desktop.py
-
-# 产物：dist\AutoBox.exe（约 23MB 单文件）
-```
-
-**使用方法**：把 `AutoBox.exe` 发给别人（微信/QQ 传文件），对方**双击即用**——弹出 AutoBox 窗口（用系统 WebView2 引擎，Win10/11 自带），关窗即停止。
-
-**桌面软件特性**：
-- 单实例保护：重复打开会提示"已在运行"（防止两个软件抢端口）
-- 日志落盘：运行日志写进 exe 旁的 `data/autobox.log`（出问题可查）
-- 无控制台：干净的原生窗口体验
-
 **注意事项**：
 - 首次运行会在 exe **旁边**自动创建 `data` 文件夹（用户数据都在里面，备份/迁移就复制这个文件夹）
 - 杀毒软件可能误报（PyInstaller 打包的常见现象）：添加信任即可，源码全在仓库里可自查
 - 系统需有 WebView2 Runtime（Win10/11 一般自带；老系统可到微软官网安装）
-
-### 桌面模式实现原理（一句话）
-
-后台线程启动本地网页服务（uvicorn）+ pywebview 开原生窗口加载它；
-窗口关闭时优雅停止服务（`window.events.closing` 事件），数据全部在本机。
-
-### 为什么用虚拟环境（venv）？
-
-- 每个项目的依赖**装在自己项目的 .venv 里**，互不干扰（你电脑上有 4 个 Python，混装容易出"装了库却 import 不到"的坑）
-- 系统 Python 保持干净，venv 坏了删掉 `.venv` 文件夹重建即可，不影响任何东西
-- 更新依赖：`pip install -r requirements.txt`（在 venv 激活状态下或直接用 `.venv\Scripts\python -m pip`）
-
-想立刻体验：网页 → 规则管家 → 新建规则，监控目录填 `D:/Learn/autobox/data/test_download`，
-动作「移动」目标填 `D:/Learn/autobox/data/test_moved`，然后往 test_download 丢一个 .txt 文件，
-几秒后看日志和 test_moved 目录——文件被自动移动了。
 
 ## 项目结构（每个文件夹都有 README 说明）
 
@@ -214,10 +160,4 @@ autobox/
 | organize（⭐3.1k，Python） | 文件整理工具：规则 DSL 设计，可直接读源码 |
 | maCrow（Python） | 宏录制回放：可直接读源码 |
 
-## 学习价值（为什么这个项目值得做）
-
-- **Python 后端**：FastAPI、SQLite、多线程、文件系统监控
-- **前端**：HTML/CSS/JS、fetch 请求、动态渲染
-- **工程思维**：事件驱动架构、防死循环设计、路径规范化（Windows 坑）
-- **产品思维**：从「规则管家」一个模块扩展到「自动化工具箱」平台
-- **未来衔接**：规则引擎 + AI 理解层 = 你自己的 Agent 管家（与大模型学习方向衔接）
+大学生试手之作
