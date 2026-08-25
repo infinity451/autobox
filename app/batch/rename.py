@@ -93,6 +93,12 @@ def preview_rename(directory: str, mode: str, params: dict, max_items: int = 200
     if not Path(directory).is_dir():
         return {"ok": False, "error": f"目录不存在: {directory}"}
 
+    # 防护（优化阶段补）：替换模式的"查找文字"不能为空。
+    # Python 的 str.replace("", x) 会在每个字符之间插入，结果完全不是用户想要的，
+    # 提前拦截比生成一堆奇怪文件名好得多。
+    if mode == MODE_REPLACE and not params.get("find", ""):
+        return {"ok": False, "error": "替换模式必须填写“查找文字”（留空会导致异常结果）"}
+
     # 只取文件夹下的一层文件（不递归子文件夹，安全）
     files = [p for p in Path(directory).iterdir() if p.is_file()]
     # 按文件名排序（保证序号模式顺序稳定）

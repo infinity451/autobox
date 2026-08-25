@@ -138,11 +138,26 @@ function resetForm() {
 // ---------- 触发器界面切换 ----------
 
 // 触发器类型变化时：文件类显示“监控目录”框，定时类显示“cron”框
+// 定时触发时还会禁用"文件类动作"选项（移动/复制/重命名没有具体文件可操作，
+// 后端校验也会拦截，这里前端先挡一道，给用户即时反馈）
 function updateTriggerUI() {
   const type = document.getElementById("triggerType").value;
   // 定时：显示 cron，隐藏监控目录
   document.getElementById("cronWrap").style.display = type === "schedule" ? "block" : "none";
   document.getElementById("watchDirWrap").style.display = type === "schedule" ? "none" : "block";
+
+  // 处理每一行动作的类型下拉框
+  document.querySelectorAll("#actionList .act-type").forEach((sel) => {
+    // 遍历所有选项，定时触发时禁用文件类动作
+    Array.from(sel.options).forEach((opt) => {
+      opt.disabled = type === "schedule" && ["move", "copy", "rename"].includes(opt.value);
+    });
+    // 如果当前选中的是文件类动作，切回"通知"（定时规则唯一合理的动作）
+    if (type === "schedule" && ["move", "copy", "rename"].includes(sel.value)) {
+      sel.value = "notify";
+      updateActionParams(sel);
+    }
+  });
 }
 // 给触发器下拉框绑定变化事件（页面加载时绑定一次）
 document.getElementById("triggerType").addEventListener("change", updateTriggerUI);
@@ -214,7 +229,9 @@ function addActionRow(editData = null) {
     row.querySelector(".act-param").value = param;
     updateActionParams(row.querySelector(".act-type"));
   }
+  // 新加的行也要应用"定时触发禁用文件动作"的限制（如果当前是定时模式）
   box.appendChild(row);
+  updateTriggerUI();
 }
 
 // 动作类型变化时：更新参数输入框的提示文字（方便用户知道填什么）

@@ -134,6 +134,15 @@ def validate_rule(rule: dict) -> str | None:
         if not trigger.get("watch_dir", "").strip():
             return "文件触发器必须指定监控目录"
 
+    # 优化清单 #5：定时触发器没有"具体文件"，文件类动作（移动/复制/重命名）
+    # 在定时规则里没有意义（执行时缺文件信息必然失败），提前拦截
+    if trigger.get("type") == TRIGGER_SCHEDULE:
+        # 遍历动作，发现有文件类动作就报错
+        for act in rule.get("actions") or []:
+            # 移动/复制/重命名都是"针对文件"的动作
+            if act.get("type") in (ACTION_MOVE, ACTION_COPY, ACTION_RENAME):
+                return "定时触发规则不能用移动/复制/重命名动作（没有具体文件），请改用通知动作"
+
     # 逐条检查条件列表（没有条件也可以，表示“任何文件都触发”）
     for cond in rule.get("conditions") or []:
         # 条件必须指定字段和操作符
@@ -161,6 +170,15 @@ def validate_rule(rule: dict) -> str | None:
         # 移动/复制必须给目标目录
         if act.get("type") in ACTIONS_WITH_DIR and not act.get("dest_dir", "").strip():
             return "移动/复制动作必须指定目标目录"
+        # 优化清单 #4：文件类动作的目标目录不能等于监控目录本身
+        # （把文件从 A 移到 A = 什么都没做，低级错误提前拦截）
+        if act.get("type") in ACTIONS_WITH_DIR and trigger.get("watch_dir", ""):
+            # 规范化路径再比较（Windows 正反斜杠差异）
+            dest = act["dest_dir"].replace("\\", "/").rstrip("/").lower()
+            src = trigger["watch_dir"].replace("\\", "/").rstrip("/").lower()
+            # 目标目录和监控目录是同一个 → 无意义的规则
+            if dest == src:
+                return "移动/复制目标目录不能等于监控目录本身（移了等于没移）"
         # 重命名必须给新文件名
         if act.get("type") == ACTION_RENAME and not act.get("new_name", "").strip():
             return "重命名动作必须指定新文件名"

@@ -25,6 +25,8 @@ from pydantic import BaseModel
 
 # 导入数据库模块（查日志）
 from . import database
+# 导入项目版本号（统一管理，不再硬编码在接口里）
+from . import __version__
 # 导入规则管理函数
 from .engine.rules import create_rule, delete_rule, get_rule, list_rules, toggle_rule, update_rule
 # 导入全局引擎单例
@@ -172,11 +174,11 @@ def api_logs(limit: int = 100) -> dict:
 @router.get("/status")
 def api_status() -> dict:
     """接口：获取引擎状态（网页首页显示用）。"""
-    # 返回：启用规则数、引擎是否运行中
+    # 返回：启用规则数、引擎是否运行中、版本号（从统一来源读取）
     return {
         "rules_enabled": len(engine.rules),   # 当前加载的启用规则数
         "running": engine._started,           # 引擎是否在运行
-        "version": "0.1.0",                   # 项目版本
+        "version": __version__,               # 版本号（app/__init__.py 统一管理）
     }
 
 
