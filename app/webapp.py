@@ -81,12 +81,37 @@ app.mount("/static", StaticFiles(directory=str(resource_dir() / "static")), name
 app.mount("/exports", StaticFiles(directory=str(data_dir() / "exports")), name="exports")
 
 
+# ---------- 页面路由 ----------
+
 # 首页入口：访问 http://127.0.0.1:8000/ 时返回 static/index.html
 @app.get("/")
 def index():
     # 读取 index.html 文件内容（encoding="utf-8" 保证中文不乱码）
     html = (resource_dir() / "static" / "index.html").read_text(encoding="utf-8")
-    # 返回给浏览器；media_type 告诉浏览器这是 HTML 页面
+    # 返回 HTML 响应
     from fastapi.responses import HTMLResponse
 
+    return HTMLResponse(html)
+
+
+# 各个功能模块的页面。首页的卡片跳转到这里（如 /rules.html）。
+# 用白名单防止任意文件读取（安全：只允许这几个页面，别的 404）。
+PAGES = ["rules", "crawler", "batch", "timer", "macro"]
+
+
+@app.get("/{page}.html")
+def page(page: str):
+    """访问模块页面，如 /rules.html → 显示 rules.html。
+
+    注意：模块页面必须注册路由，否则前端跳转过来会 404
+    （这是之前漏掉的路由，导致点进模块显示 "Not Found"）。
+    """
+    from fastapi import HTTPException
+    from fastapi.responses import HTMLResponse
+
+    # 白名单校验：只允许这 5 个页面（防路径穿越等安全问题）
+    if page not in PAGES:
+        raise HTTPException(status_code=404, detail="页面不存在")
+    # 读取对应 HTML 文件内容返回
+    html = (resource_dir() / "static" / f"{page}.html").read_text(encoding="utf-8")
     return HTMLResponse(html)
