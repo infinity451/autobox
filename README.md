@@ -18,15 +18,24 @@
 ## 快速开始
 
 ```bash
-# 1. 安装依赖（在项目根目录）
-pip install -r requirements.txt
+# 1.（首次）创建虚拟环境并安装依赖（项目根目录执行）
+python -m venv .venv                # 创建干净环境（隔离系统 Python）
+.venv\Scripts\python -m pip install -r requirements.txt   # 在 venv 里装依赖
 
-# 2. 启动（保持窗口开着）
-python main.py
+# 2. 启动（用 venv 里的 Python，别用系统 Python）
+.venv\Scripts\python main.py
 
 # 3. 浏览器打开
 http://127.0.0.1:8000
 ```
+
+**或者**：直接双击根目录的 `启动.bat`——自动用 venv 启动服务并打开浏览器（一键启动，以后都这么用）。
+
+### 为什么用虚拟环境（venv）？
+
+- 每个项目的依赖**装在自己项目的 .venv 里**，互不干扰（你电脑上有 4 个 Python，混装容易出"装了库却 import 不到"的坑）
+- 系统 Python 保持干净，venv 坏了删掉 `.venv` 文件夹重建即可，不影响任何东西
+- 更新依赖：`pip install -r requirements.txt`（在 venv 激活状态下或直接用 `.venv\Scripts\python -m pip`）
 
 想立刻体验：网页 → 规则管家 → 新建规则，监控目录填 `D:/Learn/autobox/data/test_download`，
 动作「移动」目标填 `D:/Learn/autobox/data/test_moved`，然后往 test_download 丢一个 .txt 文件，
